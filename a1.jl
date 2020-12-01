@@ -1,15 +1,18 @@
-numbers = Set()
+input = Set()
 
-open("a1.txt") do file
-  for line in eachline(file)
-    n = parse(Int32, line)
-    push!(numbers, n)
-  end
+input = open("a1.txt") do file
+  [parse(Int32, line) for line in eachline(file)]
 end
 
+ascending = sort(input)
+numbers = Set(ascending)
+
 function find_2020_complement()
-  for n in numbers
-    c = 2020 - n 
+  for (i,n) in enumerate(ascending)
+    c = 2020 - n
+    if c <= n && ascending[i+1] != c
+      break
+    end
     if in(c, numbers)
       return (n,c)
     end
@@ -21,17 +24,15 @@ show(part1)
 show(part1[1]*part1[2])
 print("\n")
 
-ascending = sort(collect(numbers))
-
 function find_2020_triple()
-  for i in 1:length(ascending)
+  for (i,n) in enumerate(ascending)
     for j in i+1:length(ascending)
-      c = 2020 - ascending[i] - ascending[j]
-      if c < ascending[1]
+      c = 2020 - n - ascending[j]
+      if c <= ascending[j] && ascending[j+1] != c
         break
       end
       if in(c, numbers)
-        return (ascending[i], ascending[j], c)
+        return (n, ascending[j], c)
       end
     end
   end
@@ -40,3 +41,18 @@ end
 part2 = find_2020_triple()
 show(part2)
 show(part2[1]*part2[2]*part2[3])
+
+using BenchmarkTools: @btime
+function find_2020_triple_brute()
+  for i in 1:length(ascending)
+    for j in i+1:length(ascending)
+      for k in j+1:length(ascending)
+        ascending[i] + ascending[j] + ascending[k] == 2020 && return (ascending[i], ascending[j], ascending[k])
+      end
+    end
+  end
+end
+
+@btime find_2020_complement()
+@btime find_2020_triple()
+@btime find_2020_triple_brute()

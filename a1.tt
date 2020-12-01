@@ -1,0 +1,44 @@
+composer toInt
+  <INT>
+end toInt
+
+def numbers: [$IN::lines -> toInt];
+
+source find2020Complement
+  @:[];
+  1 -> #
+  $@!
+  when <..~$numbers::length?($@ <=[]>)> do
+    def n: $numbers($);
+    $ + 1 -> \(
+      when <?($numbers($)+$n <=2020>)> do @find2020Complement: [$n, $numbers($)];
+      when <..~$numbers::length?($@find2020Complement <=[]>)> do $ + 1 -> #
+    \) -> !VOID
+    $ + 1 -> #
+end find2020Complement
+
+//part1
+$find2020Complement -> '$:$(1)*$(2);
+' -> !OUT::write
+
+source find2020Triple
+  @:[];
+  1 -> #
+  $@!
+  when <..~$numbers::length?($@ <=[]>)> do
+    def n1: $numbers($);
+    $ + 1 -> \(
+      when <..~$numbers::length?($@find2020Triple <=[]>)> do
+        def n2: $numbers($);
+        $ + 1 -> \(
+          when <?($numbers($)+$n1+$n2 <=2020>)> do @find2020Triple: [$n1, $n2, $numbers($)];
+          when <..~$numbers::length?($@find2020Triple <=[]>)> do $ + 1 -> #
+        \) -> !VOID
+        $ + 1 -> #
+    \) -> !VOID
+    $ + 1 -> #
+end find2020Triple
+
+//part2
+$find2020Triple -> '$:$(1)*$(2)*$(3);
+' -> !OUT::write
