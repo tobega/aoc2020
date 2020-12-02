@@ -1,0 +1,25 @@
+composer password
+  {first: <INT>, (<='-'>) last: <INT>, (<=' '>) required: <'\w'>, (<': '>) word: <'\w+'> }
+end password
+
+def input: [$IN::lines -> password];
+
+operator (word count char)
+  composer howMany
+    [<is_char|not>+] -> $::length
+    rule is_char: <='$char;'>
+    rule not: (<~is_char>)
+  end howMany
+  $word -> howMany !
+end count
+
+//part1
+$input -> \[i](when <?(($.word count $.required) <$.first..$.last>)> do $ !\) -> $::length -> !OUT::write
+'
+' -> !OUT::write
+
+//part2
+$input -> \[i](def pw: $; $ -> #
+  when <?([$pw.word...] -> $([$pw.first, $pw.last])
+      -> \[j](when <=$pw.required> do $!\) -> $::length <=1>)> do $ !
+\) -> $::length -> !OUT::write
