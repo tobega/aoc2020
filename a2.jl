@@ -13,3 +13,8 @@ part1 = count(map((rule) ->
   parse(Int16, rule[1]) <= count((c) -> c in rule[3], collect(rule[4])) <= parse(Int16, rule[2]),
   input))
 print("$part1\n")
+
+part2 = count(map((rule) ->
+  count((c) -> c in rule[3], collect(rule[4])[[parse(Int16, rule[1]), parse(Int16, rule[2])]]) == 1,
+  input))
+print("$part2\n")
