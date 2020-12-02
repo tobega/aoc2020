@@ -9,12 +9,12 @@ open("a2.txt") do file
   end
 end
 
-part1 = count(map((rule) ->
+part1 = count((rule) ->
   parse(Int16, rule[1]) <= count((c) -> c in rule[3], collect(rule[4])) <= parse(Int16, rule[2]),
-  input))
+  input)
 print("$part1\n")
 
-part2 = count(map((rule) ->
-  count((c) -> c in rule[3], collect(rule[4])[[parse(Int16, rule[1]), parse(Int16, rule[2])]]) == 1,
-  input))
+part2 = count((rule) ->
+  1 == count((c) -> c in rule[3], collect(rule[4])[[parse(Int16, rule[1]), parse(Int16, rule[2])]]),
+  input)
 print("$part2\n")
