@@ -4,17 +4,17 @@ input = []
 open("a2.txt") do file
   for line in eachline(file)
     m = match(line_pattern, line)
-    c = m.captures
-    push!(input, c)
+    (first, last, required, word) = m.captures
+    push!(input, (parse(Int16, first), parse(Int16, last), required[1], word))
   end
 end
 
-part1 = count((rule) ->
-  parse(Int16, rule[1]) <= count((c) -> c in rule[3], collect(rule[4])) <= parse(Int16, rule[2]),
+part1 = count(((min, max, required, word),) ->
+  min <= count((c) -> c == required, collect(word)) <= max,
   input)
 print("$part1\n")
 
-part2 = count((rule) ->
-  1 == count((c) -> c in rule[3], collect(rule[4])[[parse(Int16, rule[1]), parse(Int16, rule[2])]]),
+part2 = count(((first, last, required, word),) ->
+  1 == count((c) -> c == required, collect(word)[[first, last]]),
   input)
 print("$part2\n")
