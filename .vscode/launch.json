@@ -20,7 +20,7 @@
         "mainClass": "tailspin.Tailspin",
         "classPaths": ["../tailspin-v0/tailspin.jar",
              "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
-        "args": "--test a13.tt"
+        "args": "--test a4.tt"
     }
   ]
 }
