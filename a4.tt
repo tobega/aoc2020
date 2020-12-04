@@ -37,10 +37,6 @@ composer toInt
   <INT>
 end toInt
 
-composer year
-  <'\d{4}'> -> toInt
-end year
-
 composer length
   { value:<INT>, <unit>? }
   rule unit: unit:<'\w+'>
@@ -48,9 +44,9 @@ end length
 
 $input -> \[i](
     when <{
-      byr: <?($ -> year <1920..2002>)>,
-      iyr: <?($ -> year <2010..2020>)>,
-      eyr:<?($ -> year <2020..2030>)>,
+      byr: <'\d{4}'?($ -> toInt <1920..2002>)>,
+      iyr: <'\d{4}'?($ -> toInt <2010..2020>)>,
+      eyr:<'\d{4}'?($ -> toInt <2020..2030>)>,
       hgt:<?($ -> length <{unit: <='cm'>, value: <150..193>}|{unit: <='in'>, value: <59..76>}>)>,
       hcl:<'#[0-9a-f]{6}'>,
       ecl:<='amb'|='blu'|='brn'|='gry'|='grn'|='hzl'|='oth'>,
