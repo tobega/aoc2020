@@ -1,0 +1,56 @@
+composer passports
+  [<passport>+]
+  rule passport: { <field>+} (<='$#10;'>?)
+  rule field: <'\w{3}'>: (<=':'>) <'\S+'> (<=' '|='$#10;'>?)
+end passports
+
+def test: 'ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
+byr:1937 iyr:2017 cid:147 hgt:183cm
+
+iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
+hcl:#cfa07d byr:1929
+
+hcl:#ae17e1 iyr:2013
+eyr:2024
+ecl:brn pid:760753108 byr:1931
+hgt:179cm
+
+hcl:#cfa07d eyr:2025 pid:166559648
+iyr:2011 ecl:brn hgt:59in
+
+';
+
+def input: '$IN::lines -> '$;$#10;';' -> passports;
+//def input: $test -> passports;
+
+// part1
+$input -> \[i](
+    when <{byr: <>, iyr: <>, eyr:<>, hgt:<>, hcl:<>, ecl:<>, pid:<>}> $ !
+  \) -> '$::length;
+' -> !OUT::write
+
+// part2
+composer toInt
+  <INT>
+end toInt
+
+composer year
+  <'\d{4}'> -> toInt
+end year
+
+composer length
+  { value:<INT>, <unit>? }
+  rule unit: unit:<'\w+'>
+end length
+
+$input -> \[i](
+    when <{
+      byr: <?($ -> year <1920..2002>)>,
+      iyr: <?($ -> year <2010..2020>)>,
+      eyr:<?($ -> year <2020..2030>)>,
+      hgt:<?($ -> length <{unit: <='cm'>, value: <150..193>}|{unit: <='in'>, value: <59..76>}>)>,
+      hcl:<'#[0-9a-f]{6}'>,
+      ecl:<='amb'|='blu'|='brn'|='gry'|='grn'|='hzl'|='oth'>,
+      pid:<'\d{9}'>}> $ !
+  \) -> '$::length;
+' -> !OUT::write
