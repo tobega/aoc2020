@@ -1,7 +1,7 @@
-const SEATCODES = Dict('F' => 0, 'B' => 1, 'L' => 0, 'R' => 1)
+const SEATCODES = Dict('F' => '0', 'B' => '1', 'L' => '0', 'R' => '1')
 
 function seatid(line)
-  parse(Int, join(map(c -> SEATCODES[c], collect(line))); base=2)
+  parse(Int, map(c -> SEATCODES[c], line); base=2)
 end
 
 seatids = open("a5.txt") do file
