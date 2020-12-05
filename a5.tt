@@ -1,0 +1,29 @@
+composer seatId
+  @: 0;
+  (<lower|upper>+) $@
+  rule lower: (<='F'|='L'> @: $@ * 2;)
+  rule upper: (<='B'|='R'> @: $@ * 2 + 1;)
+end seatId
+
+templates max
+  @: $(1);
+  $... -> #
+  $@ !
+  <$@~..> @: $;
+end max
+
+def input: [$IN::lines -> seatId];
+
+//part1
+def highestSeat: $input -> max;
+'$highestSeat;
+' -> !OUT::write
+
+//part2
+templates findMySeat
+  @: [1..$highestSeat -> 0];
+  $... -> @($): 1;
+  $@ -> \[i](when <=0> do $i!\) -> max!
+end findMySeat
+
+$input -> findMySeat -> !OUT::write
