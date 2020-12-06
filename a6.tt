@@ -1,0 +1,43 @@
+def base: 'a' -> $::asCodePoints -> $(1) - 1;
+
+composer questionnaire
+  @:[1..26 -> 0];
+  (<question>*) $@
+  rule question: (<'[a-z]'> -> $::asCodePoints -> ($(1) - $base) -> @($): 1;)
+end questionnaire
+
+templates groupAndParse
+  @: [[]];
+  $... -> #
+  $@!
+  when <=''> do ..|@: [];
+  otherwise ..|@(last): $ -> questionnaire;
+end groupAndParse
+
+def groups: [$IN::lines] -> groupAndParse;
+
+templates union
+  @:[1..26 -> 0];
+  $... -> \[i](when <=1> @union($i): 1;\) -> !VOID
+  $@!
+end union
+
+templates sum
+  @: 0;
+  $... -> @: $@ + $;
+  $@!
+end sum
+
+//part1
+[$groups... -> union -> sum] -> sum -> '$;
+' -> !OUT::write
+
+templates intersect
+  @:[1..26 -> 1];
+  $... -> \[i](when <=0> @intersect($i): 0;\) -> !VOID
+  $@!
+end intersect
+
+//part2
+[$groups... -> intersect -> sum] -> sum -> '$;
+' -> !OUT::write
