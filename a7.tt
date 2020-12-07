@@ -8,15 +8,14 @@ end bagRule
 def rules: [$IN::lines -> bagRule];
 
 templates containerSearch
-  @: {todo: [], result: []};
+  @: {result: []};
   $ -> #
   $@.result!
   <> def required: $;
     $rules... -> \(
       when <{contains: <[<{colour: <=$required>}>]>}> do
-        ..|@containerSearch.todo: $.colour;
-    \) -> !VOID
-    ^@.todo(first..last)... -> \(
+        $.colour!
+    \) -> \(
       when <~?($@containerSearch.result <[<=$>]>)> do
         ..|@containerSearch.result: $;
         $!
