@@ -11,7 +11,7 @@
         "mainClass": "tailspin.Tailspin",
         "classPaths": ["../tailspin-v0/tailspin.jar",
              "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
-        "args": "a6.tt < a6.txt"
+        "args": "a7.tt < a7.txt"
     },
     {
         "type": "java",
@@ -20,7 +20,7 @@
         "mainClass": "tailspin.Tailspin",
         "classPaths": ["../tailspin-v0/tailspin.jar",
              "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
-        "args": "--test a4.tt"
+        "args": "--test a7.tt"
     }
   ]
 }

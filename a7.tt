@@ -1,0 +1,42 @@
+composer bagRule
+  { colour: <colour>, (<=' bags contain '>) contains: [<content|none>+]} (<='.'>)
+  rule colour: <'\w+ \w+'>
+  rule content: {count: <INT>, (<=' '>) colour: <colour>} (<' bags?(, )?'>)
+  rule none: (<='no other bags'>)
+end bagRule
+
+def rules: [$IN::lines -> bagRule];
+
+templates containerSearch
+  @: {todo: [], result: []};
+  $ -> #
+  $@.result!
+  <> def required: $;
+    $rules... -> \(
+      when <{contains: <[<{colour: <=$required>}>]>}> do
+        ..|@containerSearch.todo: $.colour;
+    \) -> !VOID
+    ^@.todo(first..last)... -> \(
+      when <~?($@containerSearch.result <[<=$>]>)> do
+        ..|@containerSearch.result: $;
+        $!
+    \) -> #
+end containerSearch
+
+//part1
+'shiny gold' -> containerSearch -> '$::length;
+' -> !OUT::write
+
+templates countBags
+  @: 0;
+  {count: 1, colour: $} -> #
+  $@ !
+  <> def current: $;
+    @: $@ + $.count;
+    $rules... -> \(when <{colour: <=$current.colour>}> do $.contains...!\)
+      -> {count: $.count * $current.count, colour: $.colour} -> #
+end countBags
+
+//part2
+'shiny gold' -> countBags -> $-1 ->'$;
+' -> !OUT::write
