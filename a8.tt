@@ -1,0 +1,49 @@
+composer instruction
+  {code: <'\w+'>, (<=' '>) arg: <INT>}
+end instruction
+
+def program: [$IN::lines -> instruction];
+
+templates findLoop
+  templates execute
+    <{code: <='nop'>}> 1 !
+    <{code: <='acc'>}> @findLoop.acc: $@findLoop.acc + $.arg; 1 !
+    <{code: <='jmp'>}> $.arg !
+  end execute
+  @: {acc: 0, program: [$... -> {$..., seen:0}]};
+  1 -> #
+  when <$@.program::length~..> $@.acc!
+  when <?($@.program($) <{seen: <=1>}>)> do {debug: $@.acc}!
+  otherwise
+    @.program($).seen: 1;
+    def current: $;
+    $@.program($) -> execute -> $ + $current -> #
+end findLoop
+
+//part1
+$program -> findLoop -> '$.debug;
+' -> !OUT::write
+
+source tryHacks
+  templates nextTwiddle
+    when <$program::length~..> 'Too big $;' -> !OUT::write
+    when <?($program($).code <='nop'|='jmp'>)> do $ !
+    otherwise $ + 1 -> #
+  end nextTwiddle
+  @: 0;
+  {debug: 0} -> #
+  when <{debug: <>}> do
+    @: $@ + 1 -> nextTwiddle;
+    $program -> \[i](
+      when <?($i <=$@tryHacks>)> do
+        {arg: $.arg, code: $.code -> \(
+          when <='nop'> do 'jmp' !
+          when <='jmp'> do 'nop' ! \) } !
+      otherwise $!
+    \) -> findLoop -> #
+  otherwise $ !
+end tryHacks
+
+//part2
+$tryHacks -> '$;
+' -> !OUT::write
