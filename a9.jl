@@ -37,15 +37,20 @@ part1 = findnonfollowing()
 println("$part1")
 
 function findcontinuoussum(target)
-  for i in 1:length(input)
-    j = 1
-    while sum(input[i:i+j]) < target
-      j += 1
+  first = 1
+  last = 2
+  sum = input[first] + input[last]
+  while sum != target && first < last
+    while sum < target
+      last += 1
+      sum += input[last]
     end
-    if sum(input[i:i+j]) == target
-      return min(input[i:i+j]...) + max(input[i:i+j]...)
+    while sum > target
+      sum -= input[first]
+      first += 1
     end
   end
+  sum == target && min(input[first:last]...) + max(input[first:last]...)
 end
 
 part2 = findcontinuoussum(part1)
