@@ -1,0 +1,48 @@
+composer toInt
+  <INT>
+end toInt
+
+templates mergesort
+  templates merge
+    @: $(2);
+    [ $(1)... -> \(
+      when <?($@merge<[](0)>)
+      | ..$@merge(1)> do
+        $ !
+      otherwise
+        ^@merge(1) !
+        $ -> #
+     \),
+     $@...] !
+  end merge
+  $ -> #
+
+  when <[](0..1)> do $!
+  otherwise
+    def half: $::length ~/ 2;
+    [$(1..$half) -> mergesort, $($half+1..last) -> mergesort] -> merge !
+end mergesort
+
+def adapters: [$IN::lines -> toInt] -> mergesort;
+
+source part1
+  @:[1..3 -> 0];
+  @($adapters(1)): 1;
+  @(3): $@(3) + 1;
+  2..$adapters::length -> $adapters($) - $adapters($-1) -> @($): $@($) + 1;
+  $@(1) * $@(3) !
+end part1
+
+'$part1;
+' -> !OUT::write
+
+source part2
+  @: [1, 1, 1, 4..$adapters(last)+3 -> 0];
+  $adapters... -> #
+  $@(last) !
+  <> def adapter: $;
+    @($adapter+1..$adapter+3): $@($adapter+1..$adapter+3)... -> $ + $@($adapter);
+end part2
+
+'$part2;
+' -> !OUT::write
