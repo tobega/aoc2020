@@ -18,6 +18,7 @@ templates move&{waypoint:}
   \);
   $...-> #
   ($@.x -> abs) + ($@.y -> abs) !
+  
   when <{action: <='F'>}> do
     @.x: $@.x + $@.dx * $.value;
     @.y: $@.y + $@.dy * $.value;
