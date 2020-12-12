@@ -9,14 +9,15 @@ templates abs
   <> $!
 end abs
 
-templates move
-  @: {dx: 1, dy: 0, x: 0, y: 0};
+templates move&{waypoint:}
+  @: $waypoint -> \(
+    when <=1> do
+      {dx: 10, dy: -1, x: 0, y: 0}!
+    otherwise
+      {dx: 1, dy: 0, x: 0, y: 0}!
+  \);
   $...-> #
   ($@.x -> abs) + ($@.y -> abs) !
-  when <{action: <='N'>}> do @.y: $@.y - $.value;
-  when <{action: <='E'>}> do @.x: $@.x + $.value;
-  when <{action: <='S'>}> do @.y: $@.y + $.value;
-  when <{action: <='W'>}> do @.x: $@.x - $.value;
   when <{action: <='F'>}> do
     @.x: $@.x + $@.dx * $.value;
     @.y: $@.y + $@.dy * $.value;
@@ -28,37 +29,25 @@ templates move
     @: {dx: $@.dy, dy: -$@.dx, x: $@.x, y: $@.y};
   when <{action: <='R'|='L'>, value: <=360>}>
     !VOID
+
+  when <{action: <='N'>}?($waypoint <=1>)> do @.dy: $@.dy - $.value;
+  when <{action: <='E'>}?($waypoint <=1>)> do @.dx: $@.dx + $.value;
+  when <{action: <='S'>}?($waypoint <=1>)> do @.dy: $@.dy + $.value;
+  when <{action: <='W'>}?($waypoint <=1>)> do @.dx: $@.dx - $.value;
+
+  when <{action: <='N'>}> do @.y: $@.y - $.value;
+  when <{action: <='E'>}> do @.x: $@.x + $.value;
+  when <{action: <='S'>}> do @.y: $@.y + $.value;
+  when <{action: <='W'>}> do @.x: $@.x - $.value;
+
   otherwise
     'error $;' -> !OUT::write
 end move
 
 //part1
-$navigation -> move -> '$;
+$navigation -> move&{waypoint: 0} -> '$;
 ' -> !OUT::write
 
-templates waypoint
-  @: {wx: 10, wy: -1, x: 0, y: 0};
-  $...-> #
-  ($@.x -> abs) + ($@.y -> abs) !
-  when <{action: <='N'>}> do @.wy: $@.wy - $.value;
-  when <{action: <='E'>}> do @.wx: $@.wx + $.value;
-  when <{action: <='S'>}> do @.wy: $@.wy + $.value;
-  when <{action: <='W'>}> do @.wx: $@.wx - $.value;
-  when <{action: <='F'>}> do
-    @.x: $@.x + $@.wx * $.value;
-    @.y: $@.y + $@.wy * $.value;
-  when <{action: <='R'>, value: <=90>}|{action: <='L'>, value: <=270>}>
-    @: {wx: -$@.wy, wy: $@.wx, x: $@.x, y: $@.y};
-  when <{action: <='R'|='L'>, value: <=180>}>
-    @: {wx: -$@.wx, wy: -$@.wy, x: $@.x, y: $@.y};
-  when <{action: <='R'>, value: <=270>}|{action: <='L'>, value: <=90>}>
-    @: {wx: $@.wy, wy: -$@.wx, x: $@.x, y: $@.y};
-  when <{action: <='R'|='L'>, value: <=360>}>
-    !VOID
-  otherwise
-    'error $;' -> !OUT::write
-end waypoint
-
 //part2
-$navigation -> waypoint -> '$;
+$navigation -> move&{waypoint: 1} -> '$;
 ' -> !OUT::write
