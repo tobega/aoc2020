@@ -1,0 +1,61 @@
+composer buses
+  [<bus|not>+]
+  rule bus: <INT> (<=','>?)
+  rule not: (<'x,?'>)
+end buses
+
+composer toInt
+  <INT>
+end toInt
+
+def data: [$IN::lines];
+
+def input: {earliest: $data(1) -> toInt, buses: $data(2) -> buses};
+
+//part1
+[$input.buses... -> {bus: $, timeSinceLeft: $input.earliest mod $}
+  -> \(
+    when <{timeSinceLeft: <=0>}> do {bus: $.bus, timeToWait: 0}!
+    otherwise {bus: $.bus, timeToWait: $.bus - $.timeSinceLeft}!
+  \)]
+  -> \(@:$(1); $... -> # $@!
+    when <{timeToWait: <..$@.timeToWait>}> do @: $;
+  \) -> $.bus * $.timeToWait -> '$;
+' -> !OUT::write
+
+composer departurePattern
+  [<p>+]
+  rule p: <INT|='x'> (<=','>?)
+end departurePattern
+
+templates getDesired
+  $ -> departurePattern -> \[i](<~='x'> {bus: $, offset: ($ - $i mod $ + 1) mod $}! \) !
+end getDesired
+
+def desired: $data(2) -> getDesired;
+
+templates ratchetUp
+  @: {candidate: 0, modulus: 1};
+  $... -> \(
+    def next: $;
+    $@ratchetUp.candidate -> #
+    when <?($ mod $next.bus <=$next.offset>)> do
+      @ratchetUp: {candidate: $, modulus: $@ratchetUp.modulus * $next.bus};
+    otherwise
+      $ + $@ratchetUp.modulus -> #
+  \) -> !VOID
+  $@.candidate!
+end ratchetUp
+
+// part2
+$desired -> ratchetUp -> '$;
+' -> !OUT::write
+
+test 'ratchet'
+  assert [{bus: 17, offset: 0}, {bus: 13, offset: 11}, {bus: 19, offset: 16}]
+    -> ratchetUp <=3417> 'calculates correctly'
+
+  assert '17,x,13,19'
+    -> getDesired <=[{bus: 17, offset: 0}, {bus: 13, offset: 11}, {bus: 19, offset: 16}]>
+    'makes pattern'
+end 'ratchet'
