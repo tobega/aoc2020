@@ -1,0 +1,69 @@
+templates setMask
+  @: [x00x] -> $(-3..1);
+  $... -> #
+  $@!
+  when <='1'> do @: $@::shift&{left: 1, fill: [x80x]};
+  otherwise @: $@::shift&{left: 1, fill: [x00x]};
+end setMask
+
+templates clearMask
+  @: [xffx] -> $(-3..1);
+  $... -> #
+  $@!
+  when <='0'> do @: $@::shift&{left: 1, fill: [x7fx]};
+  otherwise @: $@::shift&{left: 1, fill: [xffx]};
+end clearMask
+
+composer parseLine
+  <mask|set>
+  rule mask: (<='mask = '>) <'.{36}'> -> {set: $ -> setMask, clear: $ -> clearMask}
+  rule set: (<='mem['>) {mem: <INT>, (<='] = '>) value: <INT>}
+end parseLine
+
+def dockingProgram: [$IN::lines -> parseLine];
+
+sink debugPrint
+  '$.mask.set; $.mask.clear;
+$.mem... ... -> '$::asInteger -> \(<1..> '$; '!\);';
+' -> !OUT::write 
+end debugPrint
+
+templates run
+  sink expandMem
+    when <?($ mod 16 + 1 <$@run.mem::length~..> )> do
+      ..|@run.mem: $@run.mem::length+1..($ mod 16 + 1) -> [];
+      $ -> #
+    when <?($ ~/ 16 + 1 <$@run.mem($ mod 16 + 1)::length~..>)> do
+      ..|@run.mem($ mod 16 + 1): $@run.mem($ mod 16 + 1)::length+1..($ ~/ 16 + 1)  -> [x00x];
+  end expandMem
+
+  @:{mem:[], mask:{set: [x00x], clear: [xffx]}};
+  $... -> #
+  $@.mem -> \(
+    @: 0;
+    $... ... -> [x 00 ($) x] -> $::asInteger -> @: $@ + $;
+    $@!
+  \)!
+
+  when <{set: <>}> do @.mask: $;
+  otherwise
+    // $@ -> !debugPrint
+    $.mem -> !expandMem
+    @.mem($.mem mod 16 + 1; $.mem ~/ 16 + 1): (($.value::asBytes and $@.mask.clear) or $@.mask.set);
+end run
+
+test 'part 1'
+  def input: [
+    'mask = XXXXXXXXXXXXXXXXXXXXXXXXXXXXX1XXXX0X',
+    'mem[8] = 11',
+    'mem[7] = 101',
+    'mem[8] = 0'
+  ];
+
+  def program: [$input... -> parseLine];
+  assert $program -> run <=165> 'runs correctly'
+end 'part 1'
+
+def part1: $dockingProgram -> run;
+'$part1;
+' -> !OUT::write
