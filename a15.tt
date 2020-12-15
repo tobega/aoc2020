@@ -1,0 +1,37 @@
+def input: [0,5,4,1,10,14,7];
+
+templates memory&{at:}
+  @:{turn: 0, numbers:[]};
+  $(1..last-1) -> \[i](
+    $@memory.numbers::length..$ -> ..|@memory.numbers: 0;
+    @memory.turn: $i;
+    @memory.numbers($+1): $i;
+  \) -> !VOID
+  $(last) -> #
+
+  when <?($@.turn <=$at-1>)> do $!
+  otherwise
+    $@.numbers::length..$ -> ..|@.numbers: 0;
+    def spoken: $;
+    @.turn: $@.turn + 1;
+    def next: $@.numbers($spoken+1) -> \(
+      when <=0> do 0 !
+      otherwise $@memory.turn - $ !
+    \);
+    @.numbers($spoken+1): $@.turn;
+    $next -> #
+end memory
+
+test 'memory'
+  assert [0,3,6] -> memory&{at: 2020} <=436> 'first example'
+end 'memory'
+
+// part1
+$input -> memory&{at: 2020} -> '$;
+' -> !OUT::write
+
+2000..2050 -> \(
+  def at: $;
+  [0,3,6] -> memory&{at: $at} !
+\) -> '$;
+' -> !OUT::write
