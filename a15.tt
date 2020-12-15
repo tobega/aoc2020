@@ -30,8 +30,6 @@ end 'memory'
 $input -> memory&{at: 2020} -> '$;
 ' -> !OUT::write
 
-2000..2050 -> \(
-  def at: $;
-  [0,3,6] -> memory&{at: $at} !
-\) -> '$;
+// part2
+$input -> memory&{at: 30000000} -> '$;
 ' -> !OUT::write
