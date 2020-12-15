@@ -11,6 +11,7 @@
         "mainClass": "tailspin.Tailspin",
         "classPaths": ["../tailspin-v0/tailspin.jar",
              "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
+        "vmArgs": ["-Xmx3g"],
         "args": "a14.tt < a14.txt"
     },
     {

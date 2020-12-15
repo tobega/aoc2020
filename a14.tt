@@ -1,3 +1,5 @@
+use 'hash' stand-alone
+
 templates setMask
   @: [x00x] -> $(-3..1);
   $... -> #
@@ -28,28 +30,37 @@ $.mem... ... -> '$::asInteger -> \(<1..> '$; '!\);';
 ' -> !OUT::write 
 end debugPrint
 
-templates run
-  sink expandMem
-    when <?($ mod 16 + 1 <$@run.mem::length~..> )> do
-      ..|@run.mem: $@run.mem::length+1..($ mod 16 + 1) -> [];
-      $ -> #
-    when <?($ ~/ 16 + 1 <$@run.mem($ mod 16 + 1)::length~..>)> do
-      ..|@run.mem($ mod 16 + 1): $@run.mem($ mod 16 + 1)::length+1..($ ~/ 16 + 1)  -> [x00x];
-  end expandMem
+templates getBit
+  def pos: $;
+  [x00 00 00 00 01x] -> $::shift&{left: $pos, fill: [x00x]} !
+end getBit
 
-  @:{mem:[], mask:{set: [x00x], clear: [xffx]}};
+templates run&{v2:}
+  @:{mem:[] -> hash/Map, mask:{set: [x00x], clear: [xffx]}};
   $... -> #
   $@.mem -> \(
     @: 0;
-    $... ... -> [x 00 ($) x] -> $::asInteger -> @: $@ + $;
+    $::entries -> $.value -> @: $@ + $;
     $@!
   \)!
 
   when <{set: <>}> do @.mask: $;
-  otherwise
+  when <?($v2 <=0>)> do
     // $@ -> !debugPrint
-    $.mem -> !expandMem
-    @.mem($.mem mod 16 + 1; $.mem ~/ 16 + 1): (($.value::asBytes and $@.mask.clear) or $@.mask.set);
+    {key: $.mem, value: (($.value::asBytes and $@.mask.clear) or $@.mask.set) -> $::asInteger} -> @.mem::put -> !VOID
+  otherwise
+    def instruction: $;
+    def floating: (($@.mask.set xor $@.mask.clear) and [x 0f ffff ffff x]);
+    [0..35 -> getBit] -> \floats(
+      @:[($instruction.mem::asBytes or $@run.mask.set)];
+      $... -> #
+      $@... !
+      when <?(($ and $floating) <=$>)> do
+        def bit: $;
+        @: [$@... -> \(($ or $bit)! ($ and $bit::invert)!\)];
+    \floats) -> $::asInteger -> \(
+      {key: $, value: $instruction.value} -> @run.mem::put -> !VOID
+    \) -> !VOID
 end run
 
 test 'part 1'
@@ -61,9 +72,25 @@ test 'part 1'
   ];
 
   def program: [$input... -> parseLine];
-  assert $program -> run <=165> 'runs correctly'
+  assert $program -> run&{v2:0} <=165> 'runs correctly'
 end 'part 1'
 
-def part1: $dockingProgram -> run;
+def part1: $dockingProgram -> run&{v2:0};
 '$part1;
+' -> !OUT::write
+
+test 'part 2'
+  def input: [
+    'mask = 000000000000000000000000000000X1001X',
+    'mem[42] = 100',
+    'mask = 00000000000000000000000000000000X0XX',
+    'mem[26] = 1'
+  ];
+
+  def program: [$input... -> parseLine];
+  assert $program -> run&{v2:1} <=208> 'runs correctly'
+end 'part 2'
+
+def part2: $dockingProgram -> run&{v2:1};
+'$part2;
 ' -> !OUT::write
