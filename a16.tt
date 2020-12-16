@@ -1,0 +1,95 @@
+composer ticketRule
+  {rule: <'[^:]+'>, (<=': '>) low: <range>, (<=' or '>) high: <range>}
+  rule range: {from: <INT>, (<='-'>) to: <INT>}
+end ticketRule
+
+composer ticketFields
+  [<field>+]
+  rule field: <INT> (<=','>?)
+end ticketFields
+
+templates parseInput
+  @:{stage: 'rules', data:{rules: [], myTicket: [], nearby: []}};
+  $... -> #
+  $@.data !
+
+  when <='your ticket:'> @.stage: 'mine';
+  when <='nearby tickets:'> @.stage: 'nearby';
+  when <=''> do !VOID
+  when <?($@.stage <='rules'>)> ..|@.data.rules: $ -> ticketRule;
+  when <?($@.stage <='mine'>)> @.data.myTicket: $ -> ticketFields;
+  when <?($@.stage <='nearby'>)> ..|@.data.nearby: $ -> ticketFields;
+end parseInput
+
+def input: [$IN::lines] -> parseInput;
+
+templates isInvalidField
+  def field: $;
+  $input.rules -> #
+  when <=[]> do $field !
+  when <?($field <$(1).low.from..$(1).low.to | $(1).high.from..$(1).high.to>)> !VOID
+  otherwise
+    $(2..last) -> #
+end isInvalidField
+
+source scanningErrorRate
+  @: 0;
+  $input.nearby... ... -> isInvalidField -> @: $@ + $;
+  $@!
+end scanningErrorRate
+
+//part1
+'$scanningErrorRate;
+' ->!OUT::write
+
+templates isValidTicket
+  def ticket: $;
+  [$... -> isInvalidField] -> #
+  <=[]> $ticket!
+end isValidTicket
+
+def valid: [$input.nearby... -> isValidTicket];
+
+source determineRules
+  @: [1..$input.myTicket::length -> $input.rules];
+
+  $valid... -> \[i](
+    def value: $;
+    @determineRules($i):[$@determineRules($i)... -> #];
+    when <{low: <{from: <..$value>, to: <$value..>}>}
+     | {high: <{from: <..$value>, to: <$value..>}>}> do $ !
+  \) -> !VOID
+
+  $@ -> removeDuplicates !
+end determineRules
+
+templates removeDuplicates
+  @: $;
+  $@ -> #
+  when <~[<[]>]> do $!
+  otherwise
+    $ -> \[i](
+      when <[](1)> do
+        def rule: $(1);
+        @removeDuplicates($i): $rule;
+        @removeDuplicates: $@removeDuplicates -> \[j](
+          when <[]> do [$... -> \(<~=$rule> $ !\)] !
+          otherwise $!
+        \);
+    \) -> !VOID
+    $@ -> #
+end removeDuplicates
+
+def rules: $determineRules;
+
+source controlValue
+  @: 1;
+  $rules -> \[i](
+    <{rule: <'departure.*'>}> @controlValue: $@controlValue * $input.myTicket($i);
+  \) -> !VOID
+  $@!
+end controlValue
+
+// part2
+'$controlValue;
+' -> !OUT::write
