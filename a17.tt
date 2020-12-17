@@ -1,0 +1,73 @@
+def input: [$IN::lines -> [$...]];
+
+templates emptyClone
+  when <[]> do [$... -> #]!
+  otherwise '.'!
+end emptyClone
+
+templates expand
+  when <[]> do [$(1) -> emptyClone -> #, $... -> #, $(1) -> emptyClone -> #] !
+  otherwise $!
+end expand
+
+processor ConwayCube
+  @: $ -> expand;
+
+  sink cycle
+    @ConwayCube: $@ConwayCube -> expand;
+    $@ConwayCube(2..last-1; 2..last-1; 2..last-1) -> \next[i;j;k](
+      @: 0;
+      $@ConwayCube($i..$i+2; $j..$j+2; $k..$k+2)
+        ... ... ... -> \(<='#'> $!\) -> @: $@ + 1;
+      $ -> #
+      <='#'?($@ <=3|=4>)> '#'!
+      <='#'> '.'!
+      <='.'?($@ <=3>)> '#'!
+      <='.'> '.'!
+    \next) -> \update[i;j;k](
+      @ConwayCube($i+1;$j+1;$k+1): $;
+    \update) -> !VOID
+  end cycle
+
+  source count
+    @: 0;
+    $@ConwayCube... ... ... -> \(<='#'> $!\) -> @: $@ + 1;
+    $@!
+  end count
+end ConwayCube
+
+def part1: [$input] -> ConwayCube;
+1..6 -> !part1::cycle
+'$part1::count;
+' -> !OUT::write
+
+processor ConwayCube4d
+  @: $ -> expand;
+
+  sink cycle
+    @ConwayCube4d: $@ConwayCube4d -> expand;
+    $@ConwayCube4d(2..last-1; 2..last-1; 2..last-1; 2..last-1) -> \next[i;j;k;l](
+      @: 0;
+      $@ConwayCube4d($i..$i+2; $j..$j+2; $k..$k+2; $l..$l+2)
+        ... ... ... ... -> \(<='#'> $!\) -> @: $@ + 1;
+      $ -> #
+      <='#'?($@ <=3|=4>)> '#'!
+      <='#'> '.'!
+      <='.'?($@ <=3>)> '#'!
+      <='.'> '.'!
+    \next) -> \update[i;j;k;l](
+      @ConwayCube4d($i+1;$j+1;$k+1;$l+1): $;
+    \update) -> !VOID
+  end cycle
+
+  source count
+    @: 0;
+    $@ConwayCube4d... ... ... ... -> \(<='#'> $!\) -> @: $@ + 1;
+    $@!
+  end count
+end ConwayCube4d
+
+def part2: [[$input]] -> ConwayCube4d;
+1..6 -> !part2::cycle
+'$part2::count;
+' -> !OUT::write
