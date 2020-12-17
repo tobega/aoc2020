@@ -41,17 +41,17 @@ public class A2 {
   }
 
   private int part1() {
-    return (int) passwords.stream().map(p -> {
+    return (int) passwords.stream().filter(p -> {
       int count = p.password.replaceAll("[^" + p.requiredChar + "]", "").length();
       return count >= p.first && count <= p.last;
-    }).filter(b -> b).count();
+    }).count();
   }
 
   private int part2() {
     return (int) passwords.stream()
-        .map(p -> p.password.charAt(p.first-1) == p.requiredChar
+        .filter(p -> p.password.charAt(p.first-1) == p.requiredChar
             ^ (p.last-1 < p.password.length() && p.password.charAt(p.last-1) == p.requiredChar))
-        .filter(b -> b).count();
+        .count();
   }
 
   public static void main(String[] args) throws IOException {
