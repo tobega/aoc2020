@@ -1,0 +1,64 @@
+composer parseExpression
+  <expression>
+  rule expression: [<term> <operation>*]
+  rule term: <INT|parens> (<WS>?)
+  rule parens: (<='('> <WS>?) <expression> (<WS>? <=')'>)
+  rule operation: <'.'> (<WS>?) <term> (<WS>?)
+end parseExpression
+
+templates evaluate
+  @: {result: 0, pendingOp: '+'};
+  $... -> #
+  $@.result!
+  when <[]> do $ -> evaluate -> #
+  when <='+'|='*'> do @.pendingOp: $;
+  when <?($@.pendingOp <='+'>)> do @.result: $@.result + $;
+  otherwise @.result: $@.result * $;
+end evaluate
+
+def input: [$IN::lines -> parseExpression];
+
+// part1
+$input -> \(
+  @: 0;
+  $... -> evaluate -> @: $@ + $;
+  $@!
+\) -> '$;
+' -> !OUT::write
+
+templates reduceAdditions
+  @: $;
+  1 -> #
+  when <$@::length~..> do $@ !
+  when <?($@($) <='+'>)> do 
+    def a: ^@reduceAdditions($-1) -> advancedEvaluate;
+    def b: ^@reduceAdditions($) -> advancedEvaluate;
+    @reduceAdditions($-1): $a + $b;
+    $ -> #
+  otherwise $+1 -> #
+end reduceAdditions
+
+templates reduceMultiplications
+  @: $;
+  1 -> #
+  when <$@::length~..> do $@ !
+  when <?($@($) <='*'>)> do 
+    def a: ^@reduceMultiplications($-1) -> advancedEvaluate;
+    def b: ^@reduceMultiplications($) -> advancedEvaluate;
+    @reduceMultiplications($-1): $a * $b;
+    $ -> #
+  otherwise $+1 -> #
+end reduceMultiplications
+
+templates advancedEvaluate
+  when <[]> do $ -> reduceAdditions -> reduceMultiplications -> $(1) !
+  otherwise $!
+end advancedEvaluate
+
+// part2
+$input -> \(
+  @: 0;
+  $... -> advancedEvaluate -> @: $@ + $;
+  $@!
+\) -> '$;
+' -> !OUT::write
