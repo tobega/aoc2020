@@ -1,0 +1,56 @@
+composer tokenize
+  [<token>*]
+  rule token: <INT|='+'|='*'|='('|=')'> (<WS>?)
+end tokenize
+
+def input: [$IN::lines -> tokenize];
+
+operator (a apply&{op:} b)
+  when <?($op <='+'>)> do $a + $b !
+  when <?($op <='*'>)> do $a * $b !
+end apply
+
+templates shuntingYard&{prio:}
+  @: {values: [], ops: ['(']};
+  $... -> #
+  ')' -> #
+  $@.values(last) !
+
+  when <='('> do ..|@.ops: $;
+
+  when <=')' ?($@.ops(last) <='('>)> ^@.ops(last) -> !VOID
+
+  when <=')'
+      | '.' ?($@.ops(last) <~='('>) ?($ -> prio <0+($@.ops(last) -> prio)..>)> do
+    ..|@.values: (^@.values(last) apply&{op: ^@.ops(last)} ^@.values(last));
+    $ -> #
+  
+  when <'.'> do ..|@.ops: $;
+
+  otherwise ..|@.values: $;
+end shuntingYard
+
+templates equalPrio
+  1 !
+end equalPrio
+
+// part1
+$input -> \(
+  @: 0;
+  $... -> shuntingYard&{prio: equalPrio} -> @: $@ + $;
+  $@!
+\) -> '$;
+' -> !OUT::write
+
+templates plusFirst
+  when <='+'> do 1 !
+  when <='*'> do 2 !
+end plusFirst
+
+// part2
+$input -> \(
+  @: 0;
+  $... -> shuntingYard&{prio: plusFirst} -> @: $@ + $;
+  $@!
+\) -> '$;
+' -> !OUT::write
