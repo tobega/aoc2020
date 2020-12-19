@@ -1,0 +1,88 @@
+composer parseRule
+  {id: <INT> (<=': '>), <match|list>}
+  rule match: match: (<='"'>) <'.'> (<='"'>)
+  rule list: subrules: [<option>+]
+  rule option: [<ref>+] (<=' | '>?)
+  rule ref: <INT> (<WS>?)
+end parseRule
+
+source getInput
+  @: [];
+  {$IN::lines -> #, messages: $@} !
+
+  when <=''> do
+    (rules:[$@... -> parseRule]) !
+    @: [];
+  otherwise
+    ..|@: $;
+end getInput
+
+def input: $getInput;
+
+templates collectRules
+  @: [];
+  $... -> #
+  $@!
+  when <{id: <$@::length..>}> do
+    $@::length..$.id -> ..|@: {};
+    $ -> #
+  otherwise
+    @($.id+1): $;
+end collectRules
+
+templates resolveRules
+  @: $;
+  [1..$::length -> #] !
+  
+  when <?($@($) <'.*'>)> do
+    $@($)!
+  when <?($@($) <{match: <>}>)> do
+    @($): $@($).match; $@($)!
+  when <?($@($) <{subrules: <[](1)>}>)> do
+    @($): '$@($).subrules(1)... -> $+1 -> #;'; $@($)!
+  when <?($@($) <{subrules: <[](2..)>}>)> do
+    def i: $;
+    [$@($i).subrules... -> '$... -> $+1 ->#;'] ->
+      @($i): '($(1);$(2..last)...->'|$;';)';
+    $@($i)!
+  otherwise
+    '$; ' -> !OUT::write
+    '$@($);$#10;' -> !OUT::write
+    '' !
+end resolveRules
+
+def rules: $input.rules -> collectRules -> resolveRules;
+
+composer completelyMatches&{rule:}
+  @: 1;
+  (<match|not>+) $@
+  rule match: (<'$rule;'>)
+  rule not: (<~match> -> @: 0;)
+end completelyMatches
+
+// part1
+$input.messages -> \(
+  @: 0;
+  $... -> completelyMatches&{rule: $rules(1)} -> @: $@ + $;
+  $@!
+\) -> '$;
+' -> !OUT::write
+
+// part2
+// assume rules 42 and 31 don't depend on 8 and 11
+def fortytwo: $rules(43);
+def thirtyone: $rules(32);
+
+// returns nothing if it matches, else an error object
+composer failsNewRuleZero
+  (<eight> <eleven>)
+  rule eight: (<'$fortytwo;'> <eight>?)
+  rule eleven: (<'$fortytwo;'> <eleven>? <'$thirtyone;'>)
+end failsNewRuleZero
+
+$input.messages -> \(
+  @: $::length;
+  $... -> failsNewRuleZero -> @: $@ - 1;
+  $@!
+\) -> '$;
+' -> !OUT::write
