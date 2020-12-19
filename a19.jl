@@ -59,7 +59,7 @@ function matchesnewrulezero(m)
     count += 1
     r = findfirst(Regex(thirtyone), m)
   end
-  count != 0 && 1:length(m) == findfirst(Regex(fourtytwo * "{$count}" * fourtytwo * "+"), m)
+  count != 0 && matchescompletely(Regex(fourtytwo * "{$count}" * fourtytwo * "+"), m)
 end
 
 println("$(count(matchesnewrulezero, messages))")
