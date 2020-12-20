@@ -91,9 +91,6 @@ source assembleImage
 end assembleImage
 
 def baseImage: $assembleImage;
-'$baseImage;
-
-' -> !OUT::write
 
 def seamonster: [
   '                  # ',
