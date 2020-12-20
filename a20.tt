@@ -35,9 +35,10 @@ end findNeighbours
 
 def neighbours: $input -> findNeighbours;
 
+// Note: each tile matches twice, flipped and not flipped
 def corners:[$neighbours::entries -> \(<{value: <[](4)>}> $.key!\)];
 
-// part 1. Note: each tile matches twice, flipped and not flipped
+// part 1.
 $corners -> \(
   @:1;
   $... -> @: $@ * $;
