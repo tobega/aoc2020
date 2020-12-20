@@ -81,9 +81,11 @@ source assembleImage
 
   def firstCorner: $corners(1);
   $firstCorner -> input::get -> allFlips -> {id: $firstCorner, orient: $} ->
-  [[ $ -> \($! $ -> extendLine!\)]
-    -> \($! $(1) -> appendLines!\)
-    ] -> \(<[](2..) ?($(1) <[](2..)>)> $!\) -> \[i;j](
+  [
+    [ $, $ -> extendLine],
+    $ -> appendLines
+  ] -> \(<[](2..) ?($(1) <[](2..)>)> $!\)
+  -> \[i;j](
     $.orient(2..last-1; 2..last-1) !
   \) -> \[i](
     def tiles: $;
