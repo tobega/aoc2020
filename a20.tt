@@ -1,0 +1,174 @@
+include 'hash'
+
+composer parseTileData
+  [<tile>+]
+  rule tile: {(<='Tile '>) key: <INT>, (<=':$#10;'>) value: [<row>+]} (<WS>?)
+  rule row: [<='.'|='#'>+] (<WS>?)
+end parseTileData
+
+def input: '$IN::lines -> '$;$#10;';' -> parseTileData -> hash/Map;
+
+templates findNeighbours
+  def edges: [] -> hash/Map;
+  def neighbours: [] -> hash/Map;
+  $::entries -> {id: $.key, tile: $.value} -> \(
+    {key: $.tile(1..last; 1), value: $} !
+    {key: $.tile(last; 1..last), value: $} !
+    {key: $.tile(1..last;last), value: $} !
+    {key: $.tile(1; 1..last), value: $} !    
+    {key: $.tile(last..1:-1; 1), value: $} !
+    {key: $.tile(last; last..1:-1), value: $} !
+    {key: $.tile(last..1:-1;last), value: $} !
+    {key: $.tile(1; last..1:-1), value: $} !    
+  \) -> \(
+    def edge: $;
+    $ -> edges::put -> \(
+      def match: $;
+      {key: $match.value.id, value: [$edge]} -> neighbours::put
+        -> {key: $.key, value: [$.value..., $edge]} -> neighbours::put -> !VOID
+      {key: $edge.value.id, value: [$match]} -> neighbours::put
+        -> {key: $.key, value: [$.value..., $match]} -> neighbours::put -> !VOID
+    \) -> !VOID
+  \) -> !VOID
+  $neighbours!
+end findNeighbours
+
+def neighbours: $input -> findNeighbours;
+
+def corners:[$neighbours::entries -> \(<{value: <[](4)>}> $.key!\)];
+
+// part 1. Note: each tile matches twice, flipped and not flipped
+$corners -> \(
+  @:1;
+  $... -> @: $@ * $;
+  $@!
+\) -> '$;
+' -> !OUT::write
+
+templates transpose
+  def in: $;
+  [1..$(1)::length -> $in(1..last; $)] !
+end transpose
+
+templates allFlips
+  $!
+  $(1..last; last..1:-1)!
+  $(last..1:-1; last..1:-1)!
+  $(last..1:-1; 1..last)!
+end allFlips
+
+source assembleImage
+  templates extendLine
+    def border: $.orient(1..last; last);
+    $.id -> neighbours::get ... -> \selectNext(
+      when <{key: <=$border>}> do $.value!
+    \selectNext) -> \orient(
+      def id: $.id;
+      $.tile -> allFlips -> #
+      $.tile -> transpose -> allFlips -> #
+      when <?($(1..last; 1) <=$border>)> do
+        {id: $id, orient: $}!
+    \orient) -> \($! $ -> extendLine !\) !
+  end extendLine
+
+  templates appendLines
+    {id: $.id, orient: $.orient -> transpose} -> extendLine -> \(
+      def edge: {id: $.id, orient: $.orient -> transpose};
+      [$edge, $edge -> extendLine] !
+    \) !
+  end appendLines
+
+  def firstCorner: $corners(1);
+  $firstCorner -> input::get -> allFlips -> {id: $firstCorner, orient: $} ->
+  [[ $ -> \($! $ -> extendLine!\)]
+    -> \($! $(1) -> appendLines!\)
+    ] -> \(<[](2..) ?($(1) <[](2..)>)> $!\) -> \[i;j](
+    $.orient(2..last-1; 2..last-1) !
+  \) -> \[i](
+    def tiles: $;
+    1..$(1)::length -> [$tiles(1..last; $)... ...] !
+  \) !
+end assembleImage
+
+def baseImage: $assembleImage;
+'$baseImage;
+
+' -> !OUT::write
+
+def seamonster: [
+  '                  # ',
+  '#    ##    ##    ###',
+  ' #  #  #  #  #  #   '
+];
+
+def seamonsterWidth: [$seamonster(1)...] -> $::length;
+
+def seamonsterSelectors: [$seamonster... -> \(
+  [$...] -> \[i](<='#'> $i!\) !
+\)];
+
+test 'selectors'
+  assert [$seamonster(1)...] -> $($seamonsterSelectors(1)) <=['#']> '$seamonsterSelectors(1);'
+  assert [$seamonster(2)...] -> $($seamonsterSelectors(2)) <=['#','#','#','#','#','#','#','#']> '$seamonsterSelectors(2);'
+  assert [$seamonster(3)...] -> $($seamonsterSelectors(3)) <=['#','#','#','#','#','#']> '$seamonsterSelectors(3);'
+end 'selectors'
+
+templates detectSeamonsters
+  @: {image: $, monsters:0};
+  1..$@.image::length-2 -> \vertical(
+    def startRow: $;
+    $seamonsterWidth..$@detectSeamonsters.image(1)::length -> \horizontal(
+      def offset: $ - $seamonsterWidth;
+      def selectors: $seamonsterSelectors -> \[i;j]($ + $offset!\);
+      [0..~$selectors::length -> \getSeamonsterPixels(
+        $@detectSeamonsters.image($+$startRow; $selectors($+1))...!
+      \getSeamonsterPixels)] -> #
+      when <~[<='.'>]> do
+        @detectSeamonsters.monsters: $@detectSeamonsters.monsters+1;
+        0..~$selectors::length -> @detectSeamonsters.image($+$startRow; $selectors($+1)): $selectors($+1)... -> 'O';
+    \horizontal) -> !VOID
+  \vertical) -> !VOID
+  $@.monsters -> \(<1..> $!\) -> $@.image !
+end detectSeamonsters
+
+//part 2
+$baseImage -> \(
+  $ -> allFlips !
+  $ -> transpose -> allFlips !
+\) -> detectSeamonsters -> \(
+  $... -> '$...;$#10;' -> !OUT::write
+  @: 0;
+  $... ... -> \(<='#'> 1!\) -> @: $@+1;
+  $@!
+\) -> '$;
+' -> !OUT::write
+
+test 'detection'
+def sample: [['.####...#####..#...###..'...],
+['#####..#..#.#.####..#.#.'...],
+['.#.#...#.###...#.##.O#..'...],
+['#.O.##.OO#.#.OO.##.OOO##'...],
+['..#O.#O#.O##O..O.#O##.##'...],
+['...#.#..##.##...#..#..##'...],
+['#.##.#..#.#..#..##.#.#..'...],
+['.###.##.....#...###.#...'...],
+['#.####.#.#....##.#..#.#.'...],
+['##...#..#....#..#...####'...],
+['..#.##...###..#.#####..#'...],
+['....#.##.#.#####....#...'...],
+['..##.##.###.....#.##..#.'...],
+['#...#...###..####....##.'...],
+['.#.##...#.##.#.#.###...#'...],
+['#.###.#..####...##..#...'...],
+['#.###...#.##...#.##O###.'...],
+['.O##.#OO.###OO##..OOO##.'...],
+['..O#.O..O..O.#O##O##.###'...],
+['#.#..##.########..#..##.'...],
+['#.#####..#.#...##..#....'...],
+['#....##..#.#########..##'...],
+['#...#.....#..##...###.##'...],
+['#..###....##.#...##.##.#'...]
+];
+
+assert $sample -> detectSeamonsters <=$sample> 'detects detected'
+end 'detection'
