@@ -1,0 +1,66 @@
+use 'hash' stand-alone
+use 'list' stand-alone
+
+composer parseLabel
+  {ingredients: [<ingredient>+], allergens: [<allergenList>?]}
+  rule ingredient: <'\w+'> (<WS>?)
+  rule allergenList: (<='(contains '>) <allergen>+ (<=')'>)
+  rule allergen: <'\w+'> (<',? ?'>)
+end parseLabel
+
+test 'labels'
+  assert 'mxmxvkd kfcds sqjhc nhms (contains dairy, fish)' -> parseLabel
+    <={allergens:['dairy', 'fish'], ingredients:['mxmxvkd', 'kfcds', 'sqjhc', 'nhms']}> ''
+end 'labels'
+
+def foodLabels: [$IN::lines -> parseLabel];
+
+def allergens: [] -> hash/Map;
+
+sink collateAllergens
+  def food: $;
+  $.allergens... -> {key: $, value: $food.ingredients} -> allergens::put // emits previous, if any
+    -> {key: $.key, value: [$.value... -> \(<?($food.ingredients <[<=$>]>)> $!\)]}
+    -> allergens::put -> !VOID
+end collateAllergens
+
+$foodLabels... -> !collateAllergens
+
+def safeIngredients: [$foodLabels... -> $.ingredients...] -> hash/Set;
+$allergens::entries -> $.value... -> safeIngredients::remove -> !VOID
+
+// part 1
+$foodLabels -> \(
+  @: 0;
+  $... -> $.ingredients... -> safeIngredients::isMember -> @: $@ + $;
+  $@!
+\) -> '$;
+' -> !OUT::write
+
+def identifiedAllergens: [] -> hash/Map;
+
+sink resolveAllergens
+  @:[];
+  $ -> #
+  when <[](1..)> do
+    $... -> \(
+      when <{value: <[](1)>}> do
+        {key: $.value(1), value: $.key} -> identifiedAllergens::put -> !VOID
+      when <{value: <[](2..)>}> do 
+        ..|@resolveAllergens: {key: $.key, value: [$.value... -> \(<?([$ -> identifiedAllergens::get] <=[]>)> $!\)]};
+    \) -> !VOID
+    def next: $@;
+    @:[];
+    $next -> #
+end resolveAllergens
+
+[$allergens::entries] -> !resolveAllergens
+
+operator (a allergenAlphabetically b)
+  (($a -> identifiedAllergens::get) list/naturalOrder ($b -> identifiedAllergens::get)) !
+end allergenAlphabetically
+
+// part 2
+[$identifiedAllergens::entries -> $.key] -> list/sort&{by: allergenAlphabetically}
+  -> '$(1);$(2..last)... -> ',$;';
+' -> !OUT::write

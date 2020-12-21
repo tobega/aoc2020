@@ -1,0 +1,91 @@
+templates max
+  <[](0)> !VOID
+  <> @: $(1); $(2..last)... -> \(<$@max~..> @max: $;\) -> !VOID
+     $@ !
+end max
+
+test 'max'
+  assert [1, 5, 3, 9, 2] -> max <=9> 'max digit is 9'
+  assert [ [] -> max ] <=[]> 'empty list has no output'
+end 'max'
+
+templates min
+  <[](0)> !VOID
+  <> @: $(1); $(2..last)... -> \(<..~$@min> @min: $;\) -> !VOID
+     $@ !
+end min
+
+test 'min'
+  assert [1, 5, 3, 9, 2] -> min <=1> 'min digit is 1'
+  assert [ [] -> min ] <=[]> 'empty list has no output'
+end 'min'
+
+templates sum
+  @: 0;
+  $... -> @: $@ + $;
+  $@ !
+end sum
+
+test 'sum'
+  assert [1, 5, 3, 9, 2] -> sum <=20> 'sum should be 20'
+  assert [] -> sum <=0> 'empty list has sum 0'
+end 'sum'
+
+templates product
+  @: 1;
+  $... -> @: $@ * $;
+  $@ !
+end product
+
+test 'product'
+  assert [1, 5, 3, 9, 2] -> product <=270> 'product should be 270'
+  assert [] -> product <=1> 'empty list has product 1'
+end 'product'
+
+operator (a naturalOrder b)
+  <?($a <=$b>)> 0 !
+  <?($a <..$b>)> -1 !
+  <> 1 !
+end naturalOrder
+
+templates sort&{by:}
+  @: [];
+  $ -> #
+  <[](2..)>
+    def pivot: $(1);
+    [ [ $(2..last)... -> \(
+      <?(($ by $pivot) <..0>)>
+        $ !
+      <>
+        ..|@sort: $;
+     \)] -> sort&{by:by}..., $pivot, $@ -> sort&{by:by}... ] !
+   <>
+     $ !
+end sort
+
+test 'sort'
+  assert [4, 3, 1, 5, 2, 7, 9, 8, 8, 5, 3] -> sort&{by:naturalOrder} <=[1, 2, 3, 3, 4, 5, 5, 7, 8, 8, 9]> 'sort numbers'
+
+  operator (left onA right)
+    <?($left.a <..~$right.a>)> -1 !
+    <?($left.a <=$right.a>)> 0 !
+    <> 1 !
+  end onA
+
+  def expectedSorted: [{a: 1, b: 'l'}, {a: 2, b: 'n'}, {a: 3, b: 'k'}, {a: 6, b: 'j'}, {a: 9, b: 'm'}];
+
+  assert [{a: 6, b: 'j'}, {a: 3, b: 'k'}, {a: 1, b: 'l'}, {a: 9, b: 'm'}, {a: 2, b: 'n'}] -> sort&{by: onA}
+    <=$expectedSorted> 'sort on comparator expects $expectedSorted;'
+end 'sort'
+
+templates flatten
+  [ $ -> # ] !
+  <[]>
+    $... -> #
+  <>
+    $ !
+end flatten
+
+test 'flatten'
+  assert [1, [2, 'a', [3], 5], 6] -> flatten <=[1, 2, 'a', 3, 5, 6]> 'no arrays in array'
+end 'flatten'
