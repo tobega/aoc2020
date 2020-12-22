@@ -34,18 +34,15 @@ $input -> playGame -> '$;
 ' -> !OUT::write
 
 templates recursiveCombat
-  def player1Hands: [] -> hash/Set;
-  def player2Hands: [] -> hash/Set;
+  def hands: [] -> hash/Set;
   @: $;
   1 -> #
-  when <?($@(1) -> player1Hands::isMember <=1>)
-      | ?($@(2) -> player2Hands::isMember <=1>)> do 
+  when <?($@ -> hands::isMember <=1>)> do 
     {winner: 1, hand: $@(1)} !
   when <?($@ <[<[](0)>]>)> do
     $@ -> \[i](<[](1..)> {winner: $i, hand: $} !\) -> $(1) !
   otherwise
-    $@(1) -> player1Hands::add -> !VOID
-    $@(2) -> player2Hands::add -> !VOID
+    $@ -> hands::add -> !VOID
     def cards: ^@(1..2;1);
     def winner: $cards -> \(
       when <?($(1) <..$@recursiveCombat(1)::length>)
