@@ -1,0 +1,101 @@
+templates move&{times:}
+  @: $;
+
+  templates decrement
+    when <?($@move(1..4) <[<=$>]>)> do
+      ($ - 2) mod $@move::length + 1 -> #
+    otherwise
+      $ !
+  end decrement
+
+  1 -> #
+  $@ !
+  
+  when <..$times> do
+    def destination: $@(1) -> decrement;
+    @: [ $@(5..last)... -> \(
+        $! $ -> #
+        <=$destination> $@move(2..4)... !
+      \), $@(1)];
+    $ + 1 -> #
+end move
+
+test 'move'
+  assert [3,8,9,1,2,5,4,6,7] -> move&{times: 10} <=[8, 3, 7, 4, 1, 9, 2, 6, 5]> 'example 10'
+end 'move'
+
+templates finalize
+  def one: $ -> \[i](<=1> $i!\) -> $(1);
+  [$($one~..last)..., $(1..~$one)...] !
+end finalize
+
+def input: [7,9,2,8,4,5,1,3,6];
+
+// part 1
+$input -> move&{times: 100} -> finalize -> '$...;
+' -> !OUT::write
+
+processor Node
+  @: {value: $};
+  source value
+    $@Node.value!
+  end value
+  source next
+    $@Node.next !
+  end next
+  sink setNext
+    ..|@Node: (next: $);
+  end setNext
+  templates replaceNext
+    $@Node.next !
+    @Node.next: $;
+  end replaceNext
+end Node
+
+templates moveFast&{times:}
+  @: {move: 1, nodes: [1..$::length -> Node]};
+  def input: $;
+  2..$@.nodes::length -> \(
+    def i: $;
+    $@moveFast.nodes($input($i)) -> !@moveFast.nodes($input($i-1))::setNext
+  \) -> !VOID
+  $@.nodes($input(1)) -> !@.nodes($input(last))::setNext
+
+  $@.nodes($input(1)) -> #
+  
+  when <?($@.move <..$times>)> do
+    @.move: $@.move + 1;
+    def this: $;
+    def one: $this::next;
+    def two: $one::next;
+    def three: $two::next;
+    def destination: $this::value - 1 -> \(
+      when <..0> do $ + $@moveFast.nodes::length -> #
+      when <=$one::value|=$two::value|=$three::value> do $ - 1 -> #
+      otherwise $!
+    \);
+    $three::next -> !this::setNext
+    $one -> @.nodes($destination)::replaceNext -> !three::setNext
+    $this::next -> #
+
+  when <?($::value <=1>)> do $!
+  otherwise $::next -> #
+end moveFast
+
+templates finalizeFast
+  $::next -> #
+  when <?($::value <~=1>)> do $::value ! $::next -> #
+end finalizeFast
+
+// part 1 again
+$input -> moveFast&{times: 100} -> '$ -> finalizeFast;
+' -> !OUT::write
+
+test 'move fast'
+  assert [[3,8,9,1,2,5,4,6,7] -> moveFast&{times: 10} -> finalizeFast] <=[9, 2, 6, 5, 8, 3, 7, 4]> 'fast example 10'
+end 'move fast'
+
+// part 2
+[$input..., $input::length+1..1000000] -> moveFast&{times: 10000000}
+  -> ($::next -> $::value) * ($::next -> $::next -> $::value) -> '$;
+' -> !OUT::write
