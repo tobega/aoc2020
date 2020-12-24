@@ -16,7 +16,7 @@ processor Set
     <[](0)> 0 !
     <> 1 !
   end isMember
-  templates add // returning 1 for added was helpful: 1
+  templates add // returning 1 for added was helpful: 1, $ for already present: 1
     def val: $;
     def ind: $::hashCode -> $ mod $@Set::length + 1;
     $ -> #

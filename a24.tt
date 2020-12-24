@@ -1,0 +1,60 @@
+use 'hash' stand-alone
+use 'list' stand-alone
+
+composer hexDirections
+  [<nw|ne|e|se|sw|w>+]
+  rule nw: <='nw'> -> [0, -1]
+  rule ne: <='ne'> -> [1, -1]
+  rule e: <='e'> -> [1, 0]
+  rule se: <='se'> -> [0, 1]
+  rule sw: <='sw'> -> [-1, 1]
+  rule w: <='w'> -> [-1, 0]
+end hexDirections
+
+def directions: [$IN::lines -> hexDirections];
+
+templates layFloor
+  def blackTiles: [] -> hash/Set;
+  $... -> \(
+    @:[0,0];
+    $... -> @: [$@(1) + $(1), $@(2) + $(2)];
+    $@!
+  \) -> \(
+    def tileToFlip: $;
+    $tileToFlip -> blackTiles::add -> \(<=0> 0!\) -> $tileToFlip -> blackTiles::remove -> !VOID
+  \) -> !VOID
+  $blackTiles !
+end layFloor
+
+// part1
+$directions -> layFloor -> \( @: 0; $::values -> @: $@+1; $@!\) -> '$;
+' -> !OUT::write
+
+def ALL_DIRECTIONS: 'nwneesesww' -> hexDirections;
+
+templates reconfigure
+  def current: $;
+  [$current::values -> \getChangingTiles(
+    def tile: $;
+    $ALL_DIRECTIONS... -> [$(1) + $tile(1), $(2) + $tile(2)] !
+    $tile !
+  \getChangingTiles) -> \ifBlack(
+    def tile: $;
+    def blackNeighbours: [$ALL_DIRECTIONS... -> [$(1) + $tile(1), $(2) + $tile(2)]
+      -> current::isMember] -> list/sum;
+    $tile -> current::isMember -> #
+    when <=0 ?($blackNeighbours <=2>)
+        |=1 ?($blackNeighbours <1..2>)> $tile !
+  \ifBlack)] -> hash/Set !
+end reconfigure
+
+templates do&{days:}
+  @:$;
+  1..$days -> @: $@ -> reconfigure;
+  $@!
+end do
+
+// part2
+$directions -> layFloor -> do&{days: 100} -> \( @: 0; $::values -> @: $@+1; $@!\) -> '$;
+' -> !OUT::write  
+ 
