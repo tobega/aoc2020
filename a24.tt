@@ -34,11 +34,13 @@ def ALL_DIRECTIONS: 'nwneesesww' -> hexDirections;
 
 templates reconfigure
   def current: $;
+  def visited: [] -> hash/Set;
   [$current::values -> \getChangingTiles(
     def tile: $;
     $ALL_DIRECTIONS... -> [$(1) + $tile(1), $(2) + $tile(2)] !
     $tile !
-  \getChangingTiles) -> \ifBlack(
+  \getChangingTiles) -> \notVisited(<?($ -> visited::add <=1>)> $! \notVisited)
+  -> \ifBlack(
     def tile: $;
     def blackNeighbours: [$ALL_DIRECTIONS... -> [$(1) + $tile(1), $(2) + $tile(2)]
       -> current::isMember] -> list/sum;
