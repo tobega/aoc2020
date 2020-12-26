@@ -39,3 +39,24 @@ end countBags
 //part2
 'shiny gold' -> countBags -> $-1 ->'$;
 ' -> !OUT::write
+
+test 'part2'
+use shadowed core-system/
+  processor StdIn
+    source lines
+      ['shiny gold bags contain 2 dark red bags.',
+      'dark red bags contain 2 dark orange bags.',
+      'dark orange bags contain 2 dark yellow bags.',
+      'dark yellow bags contain 2 dark green bags.',
+      'dark green bags contain 2 dark blue bags.',
+      'dark blue bags contain 2 dark violet bags.',
+      'dark violet bags contain no other bags.'
+      ]...!
+    end lines
+  end StdIn
+
+  def IN: $StdIn;
+end core-system/
+
+  assert 'shiny gold' -> countBags <=127> ''
+end 'part2'
