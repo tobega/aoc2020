@@ -11,12 +11,10 @@ function Base.push!(preamble::Preamble, value::Int)
 end
 
 function follows(next::Int, preamble::Preamble)
-  for i in 1:length(preamble.preceding)
-    for j in i+1:length(preamble.preceding)
+  for i in 1:length(preamble.preceding), j in i+1:length(preamble.preceding)
       if preamble.preceding[i] + preamble.preceding[j] == next
         return true
       end
-    end
   end
   false
 end
@@ -39,18 +37,18 @@ println("$part1")
 function findcontinuoussum(target)
   first = 1
   last = 2
-  sum = input[first] + input[last]
-  while sum != target && first < last
-    while sum < target
+  cs = input[first] + input[last]
+  while cs != target && (first < last || last < length(input))
+    while cs < target
       last += 1
-      sum += input[last]
+      cs += input[last]
     end
-    while sum > target
-      sum -= input[first]
+    while cs > target
+      cs -= input[first]
       first += 1
     end
   end
-  sum == target && min(input[first:last]...) + max(input[first:last]...)
+  cs == target && sum(extrema(input[first:last]))
 end
 
 part2 = findcontinuoussum(part1)
