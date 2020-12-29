@@ -1,9 +1,10 @@
-rules = open("a7.txt") do file
-  Dict([match(r"(\w+ \w+) bags contain", line).captures[1]=>
-    Dict([m.captures[2]=>parse(Int, m.captures[1])
-      for m in eachmatch(r"(\d+) (\w+ \w+)", line)])
-        for line in eachline(file)])
-end
+rules = Dict(
+  [match(r"(\w+ \w+) bags contain", line).captures[1] => Dict(
+    [m.captures[2] => parse(Int, m.captures[1])
+      for m in eachmatch(r"(\d+) (\w+ \w+)", line)
+    ])
+    for line in eachline("a7.txt")
+  ])
 
 function addcontainersof!(containers, bag)
   for (colour, contents) in rules

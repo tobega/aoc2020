@@ -4,9 +4,7 @@ function seatid(line)
   parse(Int, map(c -> SEATCODES[c], line); base=2)
 end
 
-seatids = open("a5.txt") do file
-  BitSet([seatid(line) for line in eachline(file)])
-end
+seatids = BitSet(seatid.(eachline("a5.txt")))
 
 maxseatid = maximum(seatids)
 #part1

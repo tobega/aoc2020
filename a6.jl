@@ -1,33 +1,8 @@
-groups = open("a6.txt") do file
-  result = []
-  group = []
-  for line in eachline(file)
-    if isempty(line)
-      push!(result, group)
-      group = []
-    else
-      push!(group, line)
-    end
-  end
-  push!(result, group)
-  result
-end
+groups = split(read("a6.txt", String), "\n\n")
 
-part1 = 0
-for group in groups
-  questions = Set()
-  for questionnaire in group
-    for question in questionnaire
-      push!(questions, question)
-    end
-  end
-  global part1 += length(questions)
-end
+# union and intersect seem to work on collections of characters (i.e. strings)
+part1 = sum(g -> length(union(split(g)...)), groups)
 println("$part1")
 
-part2 = 0
-for group in groups
-  questions = intersect([Set(collect(s)) for s in group]...)
-  global part2 += length(questions)
-end
+part2 = sum(g -> length(intersect(split(g)...)), groups)
 println("$part2")
