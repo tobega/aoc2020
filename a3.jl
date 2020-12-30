@@ -1,12 +1,11 @@
 trees = open("a3.txt") do file
   hcat([map((t) -> t == '#' ? 1 : 0, collect(line)) for line in eachline(file)]...)
 end
-height = last(axes(trees, 2))
-width = last(axes(trees, 1))
+width, height = size(trees)
 
 function slope(h, v)
   Iterators.zip(
-    Iterators.accumulate((x, i) -> (x+i-1)%width+1, Iterators.repeated(h); init=1-h),
+    Iterators.accumulate((x, i) -> mod1(x+i, width), Iterators.repeated(h); init=1-h),
     1:v:height
   )
 end
