@@ -57,7 +57,7 @@ templates run&{v2:}
       $@... !
       when <?(($ and $floating) <=$>)> do
         def bit: $;
-        @: [$@... -> \(($ or $bit)! ($ and $bit::invert)!\)];
+        @: [$@... -> \(($ or $bit)! ($ and $bit::inverse)!\)];
     \floats) -> $::asInteger -> \(
       {key: $, value: $instruction.value} -> @run.mem::put -> !VOID
     \) -> !VOID
