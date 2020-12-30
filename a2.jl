@@ -1,20 +1,17 @@
 line_pattern = r"(\d+)-(\d+) (\w): (\w+)"
 
-input = []
-open("a2.txt") do file
-  for line in eachline(file)
+input = map(eachline("a2.txt")) do line
     m = match(line_pattern, line)
-    (first, last, required, word) = m.captures
-    push!(input, (parse(Int16, first), parse(Int16, last), required[1], word))
-  end
+    first, last, required, word = m.captures
+    parse(Int16, first), parse(Int16, last), required[1], collect(word)
 end
 
-part1 = count(((min, max, required, word),) ->
-  min <= count((c) -> c == required, collect(word)) <= max,
-  input)
+part1 = count(input) do (min, max, required, word)
+  min <= count(==(required), word) <= max
+end
 print("$part1\n")
 
-part2 = count(((first, last, required, word),) ->
-  1 == count((c) -> c == required, collect(word)[[first, last]]),
-  input)
+part2 = count(input) do (first, last, required, word)
+  (word[first] == required) ⊻ (word[last] == required)
+end
 print("$part2\n")
