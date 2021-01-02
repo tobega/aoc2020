@@ -41,7 +41,7 @@ source part2
   $adapters... -> #
   $@(last) !
   <> def adapter: $;
-    @($adapter+1..$adapter+3): $@($adapter+1..$adapter+3)... -> $ + $@($adapter);
+    1..3 -> @($adapter+$): $@($adapter+$) + $@($adapter);
 end part2
 
 '$part2;
