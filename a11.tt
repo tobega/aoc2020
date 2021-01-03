@@ -1,4 +1,4 @@
-def input: [$IN::lines -> ['.', $..., '.']] -> [[1..$(1)::length -> '.'], $..., [1..$(1)::length -> '.']];
+def input: [$IN::lines -> [$...]];
 
 templates countOccupied
   @:0;
@@ -15,7 +15,7 @@ templates modelSeating
     @.changed: 0;
     def seating: $;
     $ -> \[i;j](
-      when <?($i <..1>)|?($i <$seating::length..>)|?($j <..1>)|?($j <$seating($i)::length..>)> do
+      when <?($i <..~1>)|?($i <$seating::length~..>)|?($j <..~1>)|?($j <$seating($i)::length~..>)> do
         $ !
       when <='L' ?($seating($i-1..$i+1; $j-1..$j+1) -> countOccupied <=0>)> do
         @modelSeating.changed: 1;
@@ -44,7 +44,7 @@ templates countVisibleOccupied&{in:}
     {di: 1, dj: -1},
     {di: 0, dj: -1}]... -> {$..., i: $pos.i + $.di, j: $pos.j + $.dj} -> #
   $@!
-  when <?($.i <..1>)|?($.i <$in::length..>)|?($.j <..1>)|?($.j <$in($.i)::length..>)> do
+  when <?($.i <..~1>)|?($.i <$in::length~..>)|?($.j <..~1>)|?($.j <$in($.i)::length~..>)> do
     !VOID
   when <?($in($.i; $.j) <='L'>)> do
     !VOID
@@ -62,7 +62,7 @@ templates modelSeating2
     @.changed: 0;
     def seating: $;
     $ -> \[i;j](
-      when <?($i <..1>)|?($i <$seating::length..>)|?($j <..1>)|?($j <$seating($i)::length..>)> do
+      when <?($i <..~1>)|?($i <$seating::length~..>)|?($j <..~1>)|?($j <$seating($i)::length~..>)> do
         $ !
       when <='L' ?({i: $i, j: $j} -> countVisibleOccupied&{in: $seating} <=0>)> do
         @modelSeating2.changed: 1;

@@ -1,4 +1,4 @@
-def input: [$IN::lines -> ['.', $..., '.']] -> [[1..$(1)::length -> '.'], $..., [1..$(1)::length -> '.']];
+def input: [$IN::lines -> [$...]];
 
 templates getAffectingPositions&{in:, lineOfSight:}
   def pos: $;
@@ -10,7 +10,7 @@ templates getAffectingPositions&{in:, lineOfSight:}
     {di: 1, dj: 0},
     {di: 1, dj: -1},
     {di: 0, dj: -1}]... -> {$..., i: $pos.i + $.di, j: $pos.j + $.dj} -> #] !
-  when <?($.i <..1>)|?($.i <$in::length..>)|?($.j <..1>)|?($.j <$in($.i)::length..>)> do
+  when <?($.i <..~1>)|?($.i <$in::length~..>)|?($.j <..~1>)|?($.j <$in($.i)::length~..>)> do
     !VOID
   when <?($in($.i; $.j) <='L'>)> do // All seats are open at start
     {i: $.i, j: $.j} !
@@ -20,25 +20,23 @@ end getAffectingPositions
 
 templates model&{lineOfSight:}
   def input: $;
-  @:{
-    seating: $,
-    affecting: $ -> \[i;j](
-      when <='L'> do
-        {i: $i, j: $j} -> getAffectingPositions&{in: $input, lineOfSight: $lineOfSight} !
-      otherwise [] !
-    \)
-  };
+  def affecting: $ -> \[i;j](
+    when <='L'> do
+      {i: $i, j: $j} -> getAffectingPositions&{in: $input, lineOfSight: $lineOfSight} !
+    otherwise [] !
+  \);
+  @: $;
 
   templates addAffectingOccupied
     @: {total: 0, fixed: 0};
-    $@model.affecting($.i; $.j)... -> $@model.seating($.i; $.j) -> #
+    $affecting($.i; $.j)... -> $@model($.i; $.j) -> #
     { $..., $@... }!
     <='+'> @.total: $@.total + 1;
     <='#'> @.total: $@.total + 1; @.fixed: 1;
   end addAffectingOccupied
 
   [$ -> \[i;j](<='L'> {i: $i, j: $j}!\)... ...] -> #
-  $@.seating -> \(
+  $@ -> \(
     @: 0;
     $... ... -> \(<='#'> $!\) -> @: $@ + 1;
     $@!
@@ -47,19 +45,19 @@ templates model&{lineOfSight:}
   when <[](1..)> do
     $ -> \determineChanges(
       [$... -> addAffectingOccupied -> #] !
-      when <{total: <=0>} ?($@model.seating($.i;$.j) <='L'>)>
+      when <{total: <=0>} ?($@model($.i;$.j) <='L'>)>
         {i: $.i, j: $.j, value: '+'} !
-      when <{fixed: <=0>} ?($@model.seating($.i;$.j) <='L'>)>
+      when <{fixed: <=0>} ?($@model($.i;$.j) <='L'>)>
         {i: $.i, j: $.j, value: 'L'} !
-      when <{total: <4..>} ?($lineOfSight <=0>) ?($@model.seating($.i;$.j) <='+'>)>
+      when <{total: <4..>} ?($lineOfSight <=0>) ?($@model($.i;$.j) <='+'>)>
         {i: $.i, j: $.j, value: 'L'} !
-      when <{total: <5..>} ?($lineOfSight <=1>) ?($@model.seating($.i;$.j) <='+'>)>
+      when <{total: <5..>} ?($lineOfSight <=1>) ?($@model($.i;$.j) <='+'>)>
         {i: $.i, j: $.j, value: 'L'} !
-      when <?($@model.seating($.i;$.j) <='+'>)>
+      when <?($@model($.i;$.j) <='+'>)>
         {i: $.i, j: $.j, value: '#'} ! // fixed
     \determineChanges)
     -> [$... -> \applyChanges(
-      @model.seating($.i; $.j): $.value;
+      @model($.i; $.j): $.value;
       $ -> #
       <~='#'> $ !
     \applyChanges)] -> #
