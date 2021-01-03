@@ -1,16 +1,16 @@
 using BenchmarkTools: @btime
 
 function memory(start, target)
-  numbers = zeros(Int, target)
+  numbers = zeros(Int32, target)
   for (i,n) in enumerate(start[1:end-1])
     numbers[n+1]=i
   end
   turn = length(start)
   number = start[end]
   while turn < target
-    next = numbers[number+1] == 0 ? 0 : turn - numbers[number+1]
+    seen = numbers[number+1]
     numbers[number+1] = turn
-    number = next
+    number = seen == 0 ? 0 : turn - seen
     turn += 1
   end
   number
