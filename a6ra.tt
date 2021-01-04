@@ -13,6 +13,12 @@ end groupAsRelations
 
 def groups: {[[$IN::lines] -> groupAsRelations]};
 
+templates sum
+  @: 0;
+  $... -> @: $@ + $;
+  $@!
+end sum
+
 //part 1 sql
 //select sum(qpergroup) from (select count(distinct(question)) from groups as qpergroup group by groupno)
 

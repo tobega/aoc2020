@@ -9,6 +9,12 @@ end bagRule
 
 def bagrules: {[$IN::lines -> bagRule]};
 
+templates sum
+  @: 0;
+  $... -> @: $@ + $;
+  $@!
+end sum
+
 // part 1 sql
 //with recursive bags as 
 //(select container from bagrules
