@@ -29,8 +29,8 @@ def bagrules: {[$IN::lines -> bagRule]};
 templates containers
   when <?($::isempty <=1>)> do $!
   otherwise
-    ($ & bagrules) -> $({contained: §.container})
-    -> ($ | ($ -> containers)) !
+    ($ join bagrules) -> $({contained: §.container})
+    -> ($ union ($ -> containers)) !
 end containers
 
 {[{contained: 'shiny gold'}]} -> containers -> $::count -> '$;
@@ -59,8 +59,8 @@ templates containedin
   when <?($::isempty <=1>)> do $!
   otherwise
     $({multiplier: §.amount, container: §.contained})
-      -> ($ & $bagrules) -> $({§..., amount: §.amount * §.multiplier})
-      -> ($ | ($ -> containedin)) !
+      -> ($ join $bagrules) -> $({§..., amount: §.amount * §.multiplier})
+      -> ($ union ($ -> containedin)) !
 end containedin
 
 {[{container: 'x', contained: 'shiny gold', amount: 1}]} -> containedin -> $([§.amount]) -> sum

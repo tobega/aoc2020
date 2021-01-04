@@ -20,6 +20,10 @@ def groups: {[[$IN::lines] -> groupAsRelations]};
 //groups.project(groupno:, question:).group([question:], questions:).extend(qpergroup:, lambda t: t.questions.count())
 //  .sum(lambda t: t.qpergroup)
 
+//tailspin
+$groups({groupno:, qpergroup: {{question:}} -> $::count}) -> $([§.qpergroup]) -> sum -> '$;
+' -> !OUT::write
+
 // part 2 sql
 //select sum(qpergroup) from
 //(select groupno, count(distinct(question)) from
@@ -38,7 +42,7 @@ def groups: {[[$IN::lines] -> groupAsRelations]};
 //(r & s).extend(qforall:, lambda t: (t.questions div t.members).count()).sum(qforall:)
 
 //tailspin
-def groups: $input({{groupno:, member:, question:}});
 $groups({groupno:, members: {{member:}}, answers: {{member:, question:}}})
   -> $({groupno:, answeredbyall: ((answers:) div (members:)) -> $::count})
-  -> $([(answeredbyall:)]) -> sum
+  -> $([(answeredbyall:)]) -> sum -> '$;
+' -> !OUT::write
