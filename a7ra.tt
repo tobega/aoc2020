@@ -1,0 +1,68 @@
+// A look at what this might be in sql or relational syntax
+//bagrules = {container:, contained:, amount:}
+composer bagRule
+  (@: <colour>;) (<=' bags contain '>) <content|none>+ (<='.'>)
+  rule colour: <'\w+ \w+'>
+  rule content: {container: $@, amount: <INT>, (<=' '>) contained: <colour>} (<' bags?(, )?'>)
+  rule none: (<='no other bags'>)
+end bagRule
+
+def bagrules: {[$IN::lines -> bagRule]};
+
+// part 1 sql
+//with recursive bags as 
+//(select container from bagrules
+//  where contained = 'shiny gold'
+//union
+//  select r.container from bagrules r join bags b on r.contained = b.container
+//) select count(*) from bags;
+
+// Some kind of relational algebra
+//function containers(b):
+//  if (isempty(b)) return b
+//  def c: (bagrules & b).project({container:}).rename(container:, contained:);
+//  return c | containers(c)
+
+//containers([{contained: 'shiny gold'}]).count()
+
+// tailspin experimental syntax
+templates containers
+  when <?($::isempty <=1>)> do $!
+  otherwise
+    ($ & bagrules) -> $({contained: §.container})
+    -> ($ | ($ -> containers)) !
+end containers
+
+{[{contained: 'shiny gold'}]} -> containers -> $::count -> '$;
+' -> !OUT::write
+
+// part 2 sql, beware that duplicate rows may be removed
+//with recursive bags as
+//(select 'x' as container, 'shiny gold' as contained, 1 as amount
+//union
+//  select r.container, r.contained, b.amount * r.amount from bagrules r join bags b on r.container = b.contained
+//) select sum(amount) where contained != 'shiny gold';
+
+// relational algebra
+//function containedin(b):
+//  if (isempty(b)) return b
+//  def c:  (b.project({amount:, contained:}).rename(amount:, multiplier:).rename(contained:, container:)
+//    & bagrules)
+//    .extend(tally:, lambda t: t.amount * t.multiplier)
+//    .project({container:, contained:, tally:}).rename(tally:, amount:);
+//  return c | containedin(c)
+
+//containedin([{container: 'x', contained: 'shiny gold', amount: 1}])).sum(amount:)
+
+// tailspin experimental syntax
+templates containedin
+  when <?($::isempty <=1>)> do $!
+  otherwise
+    $({multiplier: §.amount, container: §.contained})
+      -> ($ & $bagrules) -> $({§..., amount: §.amount * §.multiplier})
+      -> ($ | ($ -> containedin)) !
+end containedin
+
+{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> containedin -> $([§.amount]) -> sum
+-> '$;
+' -> !OUT::write

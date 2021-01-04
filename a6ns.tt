@@ -1,0 +1,41 @@
+// How this might be solved with a new selector syntax for parts of a structure
+composer questionnaire
+  {<yes>*}
+  rule yes: <'.'>: 1 // This is questionable, why not use a real set?
+end questionnaire
+
+templates collectGroups
+  @:[];
+  [$... -> #, $@] !
+
+  when <={}> do $@! @: [];
+  otherwise ..|@: $;
+end collectGroups
+
+def groups: [$IN::lines -> questionnaire] -> collectGroups;
+
+templates union
+  @:{};
+  $... -> ..|@:$;
+  $@!
+end union
+
+templates sum
+  @: 0;
+  $... -> @: $@ + $;
+  $@!
+end sum
+
+//part1
+[$groups... -> union -> $... -> 1] -> sum -> '$;
+' -> !OUT::write
+
+templates intersect
+  @: $(1);
+  $... -> @: $@({$::keys}); // This syntax is experimental
+  $@!
+end intersect
+
+//part2
+[$groups... -> intersect -> $... -> 1] -> sum -> '$;
+' -> !OUT::write
