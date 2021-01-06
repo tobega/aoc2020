@@ -44,15 +44,15 @@ end containers
 // ) select sum(amount) where contained != 'shiny gold';
 
 // relational algebra
-// function containedin(b):
+// function contents(b):
 //   if (isempty(b)) return b
 //   def c:  (b.project({amount:, contained:}).rename(amount:, multiplier:).rename(contained:, container:)
 //     & bagrules)
 //     .extend(tally:, lambda t: t.amount * t.multiplier)
 //     .project({container:, contained:, tally:}).rename(tally:, amount:);
-//   return c | containedin(c)
+//   return c | contents(c)
 //
-// containedin([{container: 'x', contained: 'shiny gold', amount: 1}])).sum(amount:)
+// contents([{container: 'x', contained: 'shiny gold', amount: 1}])).sum(amount:)
 
 // tailspin relational syntax
 templates contents
