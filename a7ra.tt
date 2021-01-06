@@ -1,7 +1,7 @@
 // A look at what this might be in sql or relational syntax
-//bagrules = {container:, contained:, amount:}
+// bagrules is a relation/table on {container:, contained:, amount:}
 composer bagRule
-  (@: <colour>;) (<=' bags contain '>) <content|none>+ (<='.'>)
+  (<colour> -> @:$;) (<=' bags contain '>) <content|none>+ (<='.'>)
   rule colour: <'\w+ \w+'>
   rule content: {container: $@, amount: <INT>, (<=' '>) contained: <colour>} (<' bags?(, )?'>)
   rule none: (<='no other bags'>)
@@ -9,33 +9,27 @@ end bagRule
 
 def bagrules: {[$IN::lines -> bagRule]};
 
-templates sum
-  @: 0;
-  $... -> @: $@ + $;
-  $@!
-end sum
-
 // part 1 sql
-//with recursive bags as 
-//(select container from bagrules
-//  where contained = 'shiny gold'
-//union
-//  select r.container from bagrules r join bags b on r.contained = b.container
-//) select count(*) from bags;
+// with recursive bags as 
+// (select container from bagrules
+//   where contained = 'shiny gold'
+// union
+//   select r.container from bagrules r join bags b on r.contained = b.container
+// ) select count(*) from bags;
 
 // Some kind of relational algebra
-//function containers(b):
-//  if (isempty(b)) return b
-//  def c: (bagrules & b).project({container:}).rename(container:, contained:);
-//  return c | containers(c)
+// function containers(b):
+//   if (isempty(b)) return b
+//   def c: (bagrules & b).project({container:}).rename(container:, contained:);
+//   return c | containers(c)
+//
+// containers([{contained: 'shiny gold'}]).count()
 
-//containers([{contained: 'shiny gold'}]).count()
-
-// tailspin experimental syntax
+// tailspin relational syntax
 templates containers
-  when <?($::isempty <=1>)> do $!
+  when <?($::count <=0>)> do $!
   otherwise
-    ($ join bagrules) -> $({contained: §.container})
+    ($ join $bagrules) -> $({contained: §.container})
     -> ($ union ($ -> containers)) !
 end containers
 
@@ -43,32 +37,35 @@ end containers
 ' -> !OUT::write
 
 // part 2 sql, beware that duplicate rows may be removed
-//with recursive bags as
-//(select 'x' as container, 'shiny gold' as contained, 1 as amount
-//union
-//  select r.container, r.contained, b.amount * r.amount from bagrules r join bags b on r.container = b.contained
-//) select sum(amount) where contained != 'shiny gold';
+// with recursive bags as
+// (select 'x' as container, 'shiny gold' as contained, 1 as amount
+// union
+//   select r.container, r.contained, b.amount * r.amount from bagrules r join bags b on r.container = b.contained
+// ) select sum(amount) where contained != 'shiny gold';
 
 // relational algebra
-//function containedin(b):
-//  if (isempty(b)) return b
-//  def c:  (b.project({amount:, contained:}).rename(amount:, multiplier:).rename(contained:, container:)
-//    & bagrules)
-//    .extend(tally:, lambda t: t.amount * t.multiplier)
-//    .project({container:, contained:, tally:}).rename(tally:, amount:);
-//  return c | containedin(c)
+// function containedin(b):
+//   if (isempty(b)) return b
+//   def c:  (b.project({amount:, contained:}).rename(amount:, multiplier:).rename(contained:, container:)
+//     & bagrules)
+//     .extend(tally:, lambda t: t.amount * t.multiplier)
+//     .project({container:, contained:, tally:}).rename(tally:, amount:);
+//   return c | containedin(c)
+//
+// containedin([{container: 'x', contained: 'shiny gold', amount: 1}])).sum(amount:)
 
-//containedin([{container: 'x', contained: 'shiny gold', amount: 1}])).sum(amount:)
-
-// tailspin experimental syntax
-templates containedin
-  when <?($::isempty <=1>)> do $!
+// tailspin relational syntax
+templates contents
+  when <?($::count <=0>)> do $!
   otherwise
     $({multiplier: §.amount, container: §.contained})
-      -> ($ join $bagrules) -> $({§..., amount: §.amount * §.multiplier})
-      -> ($ union ($ -> containedin)) !
-end containedin
+      -> ($ join $bagrules) -> $({container:, contained:, amount: §.amount * §.multiplier})
+      -> ($ union ($ -> contents)) !
+end contents
 
-{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> containedin -> $([§.amount]) -> sum
--> '$;
+{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents -> $::list -> \(
+  @: 0;
+  $... -> @: $@ + $.amount;
+  $@!
+\) -> '$;
 ' -> !OUT::write

@@ -12,7 +12,7 @@
         "classPaths": ["../tailspin-v0/tailspin.jar",
              "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
         "vmArgs": ["-Xmx4g"],
-        "args": "a11opt.tt < a11.txt"
+        "args": "a7ra.tt < a7.txt"
     },
     {
         "type": "java",
