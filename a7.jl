@@ -16,12 +16,10 @@ function addcontainersof!(containers, bag)
   containers
 end
 
-part1 = length(addcontainersof!(Set(), "shiny gold"))
-println("$part1")
+length(addcontainersof!(Set(), "shiny gold")) |> println
 
 function contains(bag, multiplier)::Int
   multiplier * (1 + sum([contains(colour, count) for (colour, count) in rules[bag]]))
 end
 
-part2 = contains("shiny gold", 1) - 1
-println("$part2")
+contains("shiny gold", 1) - 1 |> println
