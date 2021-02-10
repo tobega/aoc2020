@@ -63,9 +63,5 @@ templates contents
       -> ($ union ($ -> contents)) !
 end contents
 
-{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents -> $::list -> \(
-  @: 0;
-  $... -> @: $@ + $.amount;
-  $@!
-\) -> '$;
+{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents ... -> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write

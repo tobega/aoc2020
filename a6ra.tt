@@ -20,35 +20,40 @@ templates sum
 end sum
 
 //part 1 sql
-//select sum(qpergroup) from (select count(distinct(question)) from groups as qpergroup group by groupno)
+// select sum(qpergroup) from (select count(distinct(question)) from groups as qpergroup group by groupno)
 
 // relational algebra
-//groups.project(groupno:, question:).group([question:], questions:).extend(qpergroup:, lambda t: t.questions.count())
-//  .sum(lambda t: t.qpergroup)
+// groups.project(groupno:, question:).group([question:], questions:).extend(qpergroup:, lambda t: t.questions.count())
+//   .sum(lambda t: t.qpergroup)
 
 //tailspin
-$groups({groupno:, qpergroup: {{question:}} -> $::count}) -> $([§.qpergroup]) -> sum -> '$;
+$groups(by $groups({groupno:}) collect {questions: Group&{of: :({question:})}})
+ -> $(groupno:, qpergroup: §.questions::count}) ... -> ..=Sum&{of: :(qpergroup:)} -> '$;
 ' -> !OUT::write
 
 // part 2 sql
-//select sum(qpergroup) from
-//(select groupno, count(distinct(question)) from
-//(select groupno, question from groups as r
-//  where not exists (select member from groups as s
-//    where s.groupno = r.groupno
-//    and not exists (select question from groups as r2
-//      where r2.groupno = r.groupno
-//      and r2.member = s.member
-//      and r2.question = r.question))
-//) group by groupno)
+// select sum(qpergroup) from
+//   (1select groupno, count(distinct(question)) from
+//     (2select groupno, question from groups as r
+//       where not exists
+//       (3select member from groups as s
+//         where s.groupno = r.groupno
+//         and not exists
+//         (4select question from groups as r2
+//           where r2.groupno = r.groupno
+//           and r2.member = s.member
+//           and r2.question = r.question
+//         )
+//       )
+//     ) group by groupno
+//   )
 
 // relational
-//def s: groups.project(groupno:, member:).group([member:], members:);
-//def r: groups.group([member:, question:], questions:);
-//(r & s).extend(qforall:, lambda t: (t.questions div t.members).count()).sum(qforall:)
+// groups.group([member:, question:], questions:).extend(members:, lambda t: t.questions.project(member:))
+//   .extend(qforall:, lambda t: (t.questions divide t.members).count()).sum(qforall:)
 
 //tailspin
-$groups({groupno:, members: {{member:}}, answers: {{member:, question:}}})
-  -> $({groupno:, answeredbyall: ((answers:) div (members:)) -> $::count})
-  -> $([(answeredbyall:)]) -> sum -> '$;
+$groups(by $groups({groupno:}) collect {members: Group&{of: :({member:})}, answers: Group&{of: :({member:, question:})}})
+  -> $({groupno:, answeredbyall: ((§.answers) divide (§.members)) -> $::count})
+  ... -> ..=Sum&{of: :(answeredbyall:)} -> '$;
 ' -> !OUT::write

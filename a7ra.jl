@@ -9,6 +9,7 @@ rules = Relation((container = String, contained = String, amount = Int64),
       for m in eachmatch(r"(\d+) (\w+ \w+)", line)
         ])
 
+#part 1
 function containers(b)
   isempty(b) && return b
   # c = rename(project(rules ⨝ b, :container), :container => :contained)
@@ -17,6 +18,15 @@ function containers(b)
 end
 
 length(containers(Relation((contained = "shiny gold",)))) |> println
+
+#alt part 1
+function containers2(b)
+  isempty(b) && return b
+  c = rules ⨝ b |> r -> map(t -> (contained = t.container,), r)
+  return c ∪ containers2(c)
+end
+
+length(containers2(Relation((contained = "shiny gold",)))) |> println
 
 #part 2
 function contents(b)
@@ -30,3 +40,13 @@ function contents(b)
 end
 
 sum(t -> t.amount, contents(Relation((container="x", contained="shiny gold", amount=1)))) |> println
+
+#alternatively
+function contents2(b)
+  isempty(b) && return b
+  c = (map(t -> (multiplier = t.amount, container = t.contained), b) ⨝ rules) |>
+    r -> map(t -> (container = t.container, contained = t.contained, amount = t.amount * t.multiplier), r)
+  return c ∪ contents2(c)
+end
+
+sum(t -> t.amount, contents2(Relation((container="x", contained="shiny gold", amount=1)))) |> println

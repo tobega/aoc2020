@@ -1,5 +1,5 @@
 trees = open("a3.txt") do file
-  hcat([map((t) -> t == '#' ? 1 : 0, collect(line)) for line in eachline(file)]...)
+  hcat([map((t) -> t == '#', collect(line)) for line in eachline(file)]...)
 end
 width, height = size(trees)
 
