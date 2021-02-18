@@ -54,7 +54,7 @@ end containers
 //
 // contents([{container: 'x', contained: 'shiny gold', amount: 1}])).sum(amount:)
 
-// tailspin relational syntax
+// tailspin relational syntax. NOTE: this is BUGGY, if amounts and colours are duplicated, they will be removed
 templates contents
   when <?($::count <=0>)> do $!
   otherwise
@@ -64,4 +64,45 @@ templates contents
 end contents
 
 {[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents ... -> ..=Sum&{of: :(amount:)} -> '$;
+' -> !OUT::write
+
+// always get correct result with a unique id on each tuple we want to keep
+processor Counter
+  @: 0;
+  source next
+    @Counter: $@Counter + 1;
+    $@Counter !
+  end next
+end Counter
+
+def idgen: $Counter;
+
+// NOTE: this is incorrect relational algebra because the generated tuples do not state facts:
+// In the generated tuples the container given does not contain the given amounts of the contained
+templates contents2
+  when <?($::count <=0>)> do $!
+  otherwise
+    $({multiplier: §.amount, container: §.contained, tempid: $idgen::next})
+      -> ($ join $bagrules) -> $({container:, contained:, amount: §.amount * §.multiplier, tempid: $idgen::next})
+      -> ($ union ($ -> contents2)) !
+end contents2
+
+{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents2 ... -> ..=Sum&{of: :(amount:)} -> '$;
+' -> !OUT::write
+
+// Here we have a solution that uses relational algebra correctly, where each tuple states the fact that
+// "The outer container contains this amount of the contained type via the given path".
+// For sake of illustration, the actual path is generated, but it could be represented by a tempid as above.
+// If the entire bagrules relation is input, the answer for all bags will be given at the same time.
+templates contents3
+  when <?($::count <=0>)> do $!
+  otherwise
+    $({container:, path:, multiplier: §.amount, z: §.contained})
+      -> ($ join $bagrules({z: §.container, contained:, amount:}))
+      -> $({container:, contained:, amount: §.amount * §.multiplier, path: [§.path..., §.z]})
+      -> ($ union ($ -> contents3)) !
+end contents3
+
+($bagrules join {[{container: 'shiny gold', path: []}]}) -> ($ union ($ -> contents3))
+-> $(by {[{container: 'shiny gold'}]} collect {totalInside:Sum&{of: :(amount:)}}) ... -> '$.totalInside;
 ' -> !OUT::write

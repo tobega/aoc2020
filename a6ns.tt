@@ -1,7 +1,7 @@
 // How this might be solved with a new selector syntax for parts of a structure
 composer questionnaire
   {<yes>*}
-  rule yes: <'.'>: 1 // This is questionable, why not use a real set?
+  rule yes: <'.'>: 1
 end questionnaire
 
 templates collectGroups
@@ -14,20 +14,8 @@ end collectGroups
 
 def groups: [$IN::lines -> questionnaire] -> collectGroups;
 
-templates union
-  @:{};
-  $... -> ..|@:$;
-  $@!
-end union
-
-templates sum
-  @: 0;
-  $... -> @: $@ + $;
-  $@!
-end sum
-
 //part1
-[$groups... -> union -> $... -> 1] -> sum -> '$;
+$groups... -> {$... ...} -> $... -> 1 -> ..=Sum&{of: :()} -> '$;
 ' -> !OUT::write
 
 templates intersect
@@ -37,5 +25,5 @@ templates intersect
 end intersect
 
 //part2
-[$groups... -> intersect -> $... -> 1] -> sum -> '$;
+$groups... -> intersect -> $... -> 1 -> ..=Sum&{of: :()} -> '$;
 ' -> !OUT::write

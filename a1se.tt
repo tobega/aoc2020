@@ -1,0 +1,16 @@
+composer toInt
+  <INT>
+end toInt
+
+def numbers: [$IN::lines -> toInt];
+
+1..$numbers::length -> {x: $numbers($), by $+1..$numbers::length -> (y:$numbers($))} -> \(
+  <?($.x + $.y <=2020>)> $.x * $.y !
+\) -> !OUT::write
+
+'
+' -> !OUT::write
+
+1..$numbers::length -> {x: $numbers($), by $+1..$numbers::length -> {y:$numbers($), by $+1..$numbers::length -> (z:$numbers($))}} -> \(
+  <?($.x + $.y + $.z <=2020>)> $.x * $.y * $.z !
+\) -> !OUT::write
