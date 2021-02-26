@@ -4,20 +4,13 @@
 templates groupAsRelations
   @: {groupno: 1, member: 1};
   $... -> #
-  $@!
   when <=''> do @: {groupno: $@.groupno + 1, member: 1};
   otherwise
     $... -> {groupno: $@.groupno, member: $@.member, question: $}!
     @.member: $@.member + 1;
 end groupAsRelations
 
-def groups: {[[$IN::lines] -> groupAsRelations]};
-
-templates sum
-  @: 0;
-  $... -> @: $@ + $;
-  $@!
-end sum
+def groups: {|[$IN::lines] -> groupAsRelations|};
 
 //part 1 sql
 // select sum(qpergroup) from (select count(distinct(question)) from groups as qpergroup group by groupno)
@@ -28,7 +21,7 @@ end sum
 
 //tailspin
 $groups(by $groups({groupno:}) collect {questions: Group&{of: :({question:})}})
- -> $(groupno:, qpergroup: §.questions::count}) ... -> ..=Sum&{of: :(qpergroup:)} -> '$;
+ -> $({groupno:, qpergroup: §.questions::count}) ... -> ..=Sum&{of: :(qpergroup:)} -> '$;
 ' -> !OUT::write
 
 // part 2 sql
@@ -54,6 +47,6 @@ $groups(by $groups({groupno:}) collect {questions: Group&{of: :({question:})}})
 
 //tailspin
 $groups(by $groups({groupno:}) collect {members: Group&{of: :({member:})}, answers: Group&{of: :({member:, question:})}})
-  -> $({groupno:, answeredbyall: ((§.answers) divide (§.members)) -> $::count})
+  -> $({groupno:, answeredbyall: (§.answers divide&{over: §.answers({question:})} §.members) -> $::count})
   ... -> ..=Sum&{of: :(answeredbyall:)} -> '$;
 ' -> !OUT::write

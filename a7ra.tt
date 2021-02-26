@@ -7,7 +7,7 @@ composer bagRule
   rule none: (<='no other bags'>)
 end bagRule
 
-def bagrules: {[$IN::lines -> bagRule]};
+def bagrules: {|$IN::lines -> bagRule|};
 
 // part 1 sql
 // with recursive bags as 
@@ -33,7 +33,7 @@ templates containers
     -> ($ union ($ -> containers)) !
 end containers
 
-{[{contained: 'shiny gold'}]} -> containers -> $::count -> '$;
+{|{contained: 'shiny gold'}|} -> containers -> $::count -> '$;
 ' -> !OUT::write
 
 // part 2 sql, beware that duplicate rows may be removed
@@ -60,10 +60,10 @@ templates contents
   otherwise
     $({multiplier: §.amount, container: §.contained})
       -> ($ join $bagrules) -> $({container:, contained:, amount: §.amount * §.multiplier})
-      -> ($ union ($ -> contents)) !
+      -> {|$...,  $ -> contents ...|} !
 end contents
 
-{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents ... -> ..=Sum&{of: :(amount:)} -> '$;
+{|{container: 'x', contained: 'shiny gold', amount: 1}|} -> contents ... -> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write
 
 // always get correct result with a unique id on each tuple we want to keep
@@ -87,7 +87,7 @@ templates contents2
       -> ($ union ($ -> contents2)) !
 end contents2
 
-{[{container: 'x', contained: 'shiny gold', amount: 1}]} -> contents2 ... -> ..=Sum&{of: :(amount:)} -> '$;
+{|{container: 'x', contained: 'shiny gold', amount: 1}|} -> contents2 ... -> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write
 
 // Here we have a solution that uses relational algebra correctly, where each tuple states the fact that
@@ -103,6 +103,22 @@ templates contents3
       -> ($ union ($ -> contents3)) !
 end contents3
 
-($bagrules join {[{container: 'shiny gold', path: []}]}) -> ($ union ($ -> contents3))
--> $(by {[{container: 'shiny gold'}]} collect {totalInside:Sum&{of: :(amount:)}}) ... -> '$.totalInside;
+($bagrules join {|{container: 'shiny gold', path: []}|}) -> ($ union ($ -> contents3))
+-> $(by {|{container: 'shiny gold'}|} collect {totalInside:Sum&{of: :(amount:)}}) ... -> '$.totalInside;
+' -> !OUT::write
+
+// More tailspinny version??
+templates contents4
+  $!
+  $ -> #
+  when <?($::count <1..>)>
+    def next: $({container:, path:, multiplier: §.amount, z: §.contained})
+      -> ($ join $bagrules({z: §.container, contained:, amount:}))
+      -> $({container:, contained:, amount: §.amount * §.multiplier, path: [§.path..., §.z]});
+    $next !
+    $next -> #
+end contents4
+
+($bagrules join {|{container: 'shiny gold', path: []}|}) -> contents4 ...
+-> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write
