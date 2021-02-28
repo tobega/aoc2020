@@ -1,0 +1,67 @@
+use 'list' stand-alone
+
+composer parseLabel
+  {ingredients: [<ingredient>+], allergens: [<allergenList>?]}
+  rule ingredient: <'\w+'> (<WS>?)
+  rule allergenList: (<='(contains '>) <allergen>+ (<=')'>)
+  rule allergen: <'\w+'> (<',? ?'>)
+end parseLabel
+
+test 'labels'
+  assert 'mxmxvkd kfcds sqjhc nhms (contains dairy, fish)' -> parseLabel
+    <={allergens:['dairy', 'fish'], ingredients:['mxmxvkd', 'kfcds', 'sqjhc', 'nhms']}> ''
+end 'labels'
+
+def foodLabels: [$IN::lines -> parseLabel];
+
+def allergenAssociations: {|$foodLabels -> \[i]({foodId: $i, by $.ingredients... -> (ingredient:$), by $.allergens... -> (allergen:$)}!\) ...|};
+
+def possibleAllergens: ($allergenAssociations divide&{over: $allergenAssociations({ingredient:, allergen:})} $allergenAssociations({foodId:, allergen:}));
+
+def safeIngredients: ({|$foodLabels... -> $.ingredients... -> {ingredient: $}|} notMatching $possibleAllergens);
+
+def safeOccurrences: ({|$foodLabels -> \[i]({foodId: $i, by $.ingredients... -> (ingredient:$)}!\)...|} join $safeIngredients) -> $::count;
+
+test 'example'
+  modify program
+    def foodLabels: [[
+      'mxmxvkd kfcds sqjhc nhms (contains dairy, fish)',
+      'trh fvjkl sbzzf mxmxvkd (contains dairy)',
+      'sqjhc fvjkl (contains soy)',
+      'sqjhc mxmxvkd sbzzf (contains fish)'
+    ]... -> parseLabel];
+  end program
+
+  assert [$possibleAllergens...] <[
+      <={allergen: 'soy', ingredient: 'fvjkl'}>,
+      <={allergen: 'fish', ingredient: 'mxmxvkd'}>,
+      <={allergen: 'fish', ingredient: 'sqjhc'}>,
+      <={allergen: 'soy', ingredient: 'sqjhc'}>,
+      <={allergen: 'dairy', ingredient: 'mxmxvkd'}>
+      VOID
+    ]> 'ingredients always matching allergen'
+
+  assert [$safeIngredients... -> $.ingredient] <[<='kfcds'>, <='nhms'>, <='sbzzf'>, <='trh'> VOID]> 'safe ingredients'
+
+  assert $safeOccurrences <=5> 'result is 5'
+end 'example'
+
+// part 1
+'$safeOccurrences;
+' -> !OUT::write
+
+templates identifyAllergens
+  when <?($::count <1..>)> do
+    def unique: ($ matching ($(collect {n: Count} by $({allergen:})) join {|{n: 1}|}));
+    $unique... !
+    ($ notMatching $unique({ingredient:})) -> #
+end identifyAllergens
+
+operator (a allergenAlphabetically b)
+  ($a.allergen list/naturalOrder $b.allergen) !
+end allergenAlphabetically
+
+// part 2
+[$possibleAllergens -> identifyAllergens] -> list/sort&{by: allergenAlphabetically}
+  -> '$(1).ingredient;$(2..last)... -> ',$.ingredient;';
+' -> !OUT::write
