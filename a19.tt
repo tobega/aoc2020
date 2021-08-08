@@ -1,3 +1,5 @@
+data rule <{id: <id>, subrules: <subrules> VOID}|{id: <id>, match: <match> VOID}>,
+     rules <[<rule>* VOID]>
 composer parseRule
   {id: <INT> (<=': '>), <match|list>}
   rule match: match: (<='"'>) <'.'> (<='"'>)

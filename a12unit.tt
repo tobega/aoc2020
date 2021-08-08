@@ -1,0 +1,54 @@
+composer instruction
+  {action: <'.'>, value: <INT>}
+end instruction
+
+def navigation: [$IN::lines -> instruction];
+
+templates abs
+  <?($::raw <..0>)> -$!
+  <> $!
+end abs
+
+templates move&{waypoint:}
+  @: $waypoint -> \(
+    when <=1> do
+      {dx: 10"x", dy: -1"y", x: 0"x", y: 0"y"}!
+    otherwise
+      {dx: 1"x", dy: 0"y", x: 0"x", y: 0"y"}!
+  \);
+  $...-> #
+  (($@.x -> abs) + ($@.y -> abs))"d" !
+  
+  when <{action: <='F'>}> do
+    @.x: $@.x + $@.dx * $.value;
+    @.y: $@.y + $@.dy * $.value;
+  when <{action: <='R'>, value: <=90>}|{action: <='L'>, value: <=270>}>
+    @: {dx: (-$@.dy)"x", dy: ($@.dx)"y", x: $@.x, y: $@.y};
+  when <{action: <='R'|='L'>, value: <=180>}>
+    @: {dx: -$@.dx, dy: -$@.dy, x: $@.x, y: $@.y};
+  when <{action: <='R'>, value: <=270>}|{action: <='L'>, value: <=90>}>
+    @: {dx: ($@.dy)"x", dy: (-$@.dx)"y", x: $@.x, y: $@.y};
+  when <{action: <='R'|='L'>, value: <=360>}>
+    !VOID
+
+  when <{action: <='N'>}?($waypoint <=1>)> do @.dy: $@.dy - $.value;
+  when <{action: <='E'>}?($waypoint <=1>)> do @.dx: $@.dx + $.value;
+  when <{action: <='S'>}?($waypoint <=1>)> do @.dy: $@.dy + $.value;
+  when <{action: <='W'>}?($waypoint <=1>)> do @.dx: $@.dx - $.value;
+
+  when <{action: <='N'>}> do @.y: $@.y - $.value;
+  when <{action: <='E'>}> do @.x: $@.x + $.value;
+  when <{action: <='S'>}> do @.y: $@.y + $.value;
+  when <{action: <='W'>}> do @.x: $@.x - $.value;
+
+  otherwise
+    'error $;' -> !OUT::write
+end move
+
+//part1
+$navigation -> move&{waypoint: 0} -> '$;
+' -> !OUT::write
+
+//part2
+$navigation -> move&{waypoint: 1} -> '$;
+' -> !OUT::write

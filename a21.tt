@@ -1,6 +1,8 @@
 use 'hash' stand-alone
 use 'list' stand-alone
 
+data key <>, value <>
+
 composer parseLabel
   {ingredients: [<ingredient>+], allergens: [<allergenList>?]}
   rule ingredient: <'\w+'> (<WS>?)

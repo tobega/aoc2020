@@ -1,5 +1,7 @@
 include 'hash'
 
+data key <>, value <>
+
 composer parseTileData
   [<tile>+]
   rule tile: {(<='Tile '>) key: <INT>, (<=':$#10;'>) value: [<row>+]} (<WS>?)

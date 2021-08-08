@@ -9,19 +9,17 @@
         "name": "Tailspin",
         "request": "launch",
         "mainClass": "tailspin.Tailspin",
-        "classPaths": ["../tailspin-v0/tailspin.jar",
-             "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
+        "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
         "vmArgs": ["-Xmx4g"],
-        "args": "a21ra.tt < a21.txt"
+        "args": "a25.tt < a25.txt"
     },
     {
         "type": "java",
         "name": "Test Tailspin",
         "request": "launch",
         "mainClass": "tailspin.Tailspin",
-        "classPaths": ["../tailspin-v0/tailspin.jar",
-             "../tailspin-v0/lib/antlr-runtime-4.8.jar"],
-        "args": "--test a21ra.tt"
+        "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
+        "args": "--test a14.tt"
     }
   ]
 }

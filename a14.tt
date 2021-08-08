@@ -19,14 +19,14 @@ end clearMask
 composer parseLine
   <mask|set>
   rule mask: (<='mask = '>) <'.{36}'> -> {set: $ -> setMask, clear: $ -> clearMask}
-  rule set: (<='mem['>) {mem: <INT>, (<='] = '>) value: <INT>}
+  rule set: (<='mem['>) {adress: <INT>, (<='] = '>) value: <INT>}
 end parseLine
 
 def dockingProgram: [$IN::lines -> parseLine];
 
 sink debugPrint
   '$.mask.set; $.mask.clear;
-$.mem... ... -> '$::asInteger -> \(<1..> '$; '!\);';
+$.memory... ... -> '$::asInteger -> \(<1..> '$; '!\);';
 ' -> !OUT::write 
 end debugPrint
 
@@ -36,9 +36,9 @@ templates getBit
 end getBit
 
 templates run&{v2:}
-  @:{mem:[] -> hash/Map, mask:{set: [x00x], clear: [xffx]}};
+  @:{memory:[] -> hash/Map, mask:{set: [x00x], clear: [xffx]}};
   $... -> #
-  $@.mem -> \(
+  $@.memory -> \(
     @: 0;
     $::entries -> $.value -> @: $@ + $;
     $@!
@@ -47,19 +47,19 @@ templates run&{v2:}
   when <{set: <>}> do @.mask: $;
   when <?($v2 <=0>)> do
     // $@ -> !debugPrint
-    {key: $.mem, value: (($.value::asBytes and $@.mask.clear) or $@.mask.set) -> $::asInteger} -> @.mem::put -> !VOID
+    {key: $.adress, value: (($.value::asBytes and $@.mask.clear) or $@.mask.set) -> $::asInteger} -> @.memory::put -> !VOID
   otherwise
     def instruction: $;
     def floating: (($@.mask.set xor $@.mask.clear) and [x 0f ffff ffff x]);
     [0..35 -> getBit] -> \floats(
-      @:[($instruction.mem::asBytes or $@run.mask.set)];
+      @:[($instruction.adress::asBytes or $@run.mask.set)];
       $... -> #
       $@... !
       when <?(($ and $floating) <=$>)> do
         def bit: $;
         @: [$@... -> \(($ or $bit)! ($ and $bit::inverse)!\)];
     \floats) -> $::asInteger -> \(
-      {key: $, value: $instruction.value} -> @run.mem::put -> !VOID
+      {key: $, value: $instruction.value} -> @run.memory::put -> !VOID
     \) -> !VOID
 end run
 
