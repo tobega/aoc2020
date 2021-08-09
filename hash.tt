@@ -49,29 +49,29 @@ test 'set'
 
   assert 5 -> set::remove <=0> 'set should not remove 5 again'
 
-  assert 4 -> set::isMember <=1> '4 should be a member'
+  assert 4 -> set::iscber <=1> '4 should be a cber'
 
-  assert 5 -> set::isMember <=0> '5 should not be a member'
+  assert 5 -> set::iscber <=0> '5 should not be a cber'
 end 'set'
 
-processor Map
+processor Map&{key:, value:}
   source entries
     $@Map... ... !
   end entries
   templates get
-    def key: $;
+    def needle: $;
     def ind: $::hashCode -> $ mod $@Map::length + 1;
     $@Map($ind)... -> #
-    <{key: <=$key>}> $.value !
+    <?($(key) <=$needle>)> $(value) !
   end get
   templates remove
-    def key: $;
+    def needle: $;
     def ind: $::hashCode -> $ mod $@Map::length + 1;
-    $@Map($ind) -> \[i](<{key: <=$key>}> ^@Map($ind;$i) !\)... -> $.value !
+    $@Map($ind) -> \[i](<?($(key) <=$needle>)> ^@Map($ind;$i) !\)... -> $(value) !
   end remove
   templates put
     def val: $;
-    def ind: $.key::hashCode -> $ mod $@Map::length + 1;
+    def ind: $(key)::hashCode -> $ mod $@Map::length + 1;
     $@Map($ind) -> #
     <[](32)> // rehash
       def old: $@Map;
@@ -79,7 +79,7 @@ processor Map
       $old... ... -> put -> !VOID
       $val -> put !
     <>
-      $ -> \[i](<{key: <=$val.key>}> ^@Map($ind;$i) !\)... !
+      $ -> \[i](<?($(key) <=$val(key)>)> ^@Map($ind;$i) !\)... !
       ..|@Map($ind): $val;
   end put
   @:[1..32 -> []];
@@ -87,13 +87,13 @@ processor Map
 end Map
 
 test 'map'
-  def map: [{key: 'a', value: 1}, {key: 'b', value: 2}] -> Map;
+  def map: [{letter: 'a', count: 1}, {letter: 'b', count: 2}] -> Map&{key: :(letter:), value: :(count:)};
 
-  assert [ $map::entries ] <[<={key: 'a', value: 1}>, <={key: 'b', value: 2}>](2)> 'loaded'
+  assert [ $map::entries ] <[<={letter: 'a', count: 1}>, <={letter: 'b', count: 2}>](2)> 'loaded'
 
   assert 'a' -> map::get <=1> 'a should be mapped to 1'
 
-  assert [{key: 'a', value: 33} -> map::put] <[<={key: 'a', value: 1}>](1)> 'should evict mapping a to 1'
+  assert [{letter: 'a', count: 33} -> map::put] <[<={letter: 'a', count: 1}>](1)> 'should evict mapping a to 1'
 
   assert 'a' -> map::get <=33> 'a should now be mapped to 33'
 

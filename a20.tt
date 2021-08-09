@@ -1,35 +1,33 @@
 include 'hash'
 
-data key <>, value <>
-
 composer parseTileData
   [<tile>+]
-  rule tile: {(<='Tile '>) key: <INT>, (<=':$#10;'>) value: [<row>+]} (<WS>?)
+  rule tile: {(<='Tile '>) id: <INT>, (<=':$#10;'>) encodedTile: [<row>+]} (<WS>?)
   rule row: [<='.'|='#'>+] (<WS>?)
 end parseTileData
 
-def input: '$IN::lines -> '$;$#10;';' -> parseTileData -> hash/Map;
+def input: '$IN::lines -> '$;$#10;';' -> parseTileData -> hash/Map&{key: :(id:), value: :(encodedTile:)};
 
 templates findNeighbours
-  def edges: [] -> hash/Map;
-  def neighbours: [] -> hash/Map;
-  $::entries -> {id: $.key, tile: $.value} -> \(
-    {key: $.tile(1..last; 1), value: $} !
-    {key: $.tile(last; 1..last), value: $} !
-    {key: $.tile(1..last;last), value: $} !
-    {key: $.tile(1; 1..last), value: $} !    
-    {key: $.tile(last..1:-1; 1), value: $} !
-    {key: $.tile(last; last..1:-1), value: $} !
-    {key: $.tile(last..1:-1;last), value: $} !
-    {key: $.tile(1; last..1:-1), value: $} !    
+  def edges: [] -> hash/Map&{key: :(edge:), value: :(inputTile:)};
+  def neighbours: [] -> hash/Map&{key: :(id:), value: :(neighbours:)};
+  $::entries -> \(
+    {edge: $.encodedTile(1..last; 1), inputTile: $} !
+    {edge: $.encodedTile(last; 1..last), inputTile: $} !
+    {edge: $.encodedTile(1..last;last), inputTile: $} !
+    {edge: $.encodedTile(1; 1..last), inputTile: $} !    
+    {edge: $.encodedTile(last..1:-1; 1), inputTile: $} !
+    {edge: $.encodedTile(last; last..1:-1), inputTile: $} !
+    {edge: $.encodedTile(last..1:-1;last), inputTile: $} !
+    {edge: $.encodedTile(1; last..1:-1), inputTile: $} !    
   \) -> \(
-    def edge: $;
+    def edgedTile: $;
     $ -> edges::put -> \(
       def match: $;
-      {key: $match.value.id, value: [$edge]} -> neighbours::put
-        -> {key: $.key, value: [$.value..., $edge]} -> neighbours::put -> !VOID
-      {key: $edge.value.id, value: [$match]} -> neighbours::put
-        -> {key: $.key, value: [$.value..., $match]} -> neighbours::put -> !VOID
+      {id: $match.inputTile.id, neighbours: [$edgedTile]} -> neighbours::put
+        -> {id: $.id, neighbours: [$.neighbours..., $edgedTile]} -> neighbours::put -> !VOID
+      {id: $edgedTile.inputTile.id, neighbours: [$match]} -> neighbours::put
+        -> {id: $.id, neighbours: [$.neighbours..., $match]} -> neighbours::put -> !VOID
     \) -> !VOID
   \) -> !VOID
   $neighbours!
@@ -38,7 +36,7 @@ end findNeighbours
 def neighbours: $input -> findNeighbours;
 
 // Note: each tile matches twice, flipped and not flipped
-def corners:[$neighbours::entries -> \(<{value: <[](4)>}> $.key!\)];
+def corners:[$neighbours::entries -> \(<{neighbours: <[](4)>}> $.id!\)];
 
 // part 1.
 $corners -> \(
@@ -64,11 +62,11 @@ source assembleImage
   templates extendLine
     def border: $.orient(1..last; last);
     $.id -> neighbours::get ... -> \selectNext(
-      when <{key: <=$border>}> do $.value!
+      when <{edge: <=$border>}> do $.inputTile!
     \selectNext) -> \orient(
       def id: $.id;
-      $.tile -> allFlips -> #
-      $.tile -> transpose -> allFlips -> #
+      $.encodedTile -> allFlips -> #
+      $.encodedTile -> transpose -> allFlips -> #
       when <?($(1..last; 1) <=$border>)> do
         {id: $id, orient: $}!
     \orient) -> \($! $ -> extendLine !\) !

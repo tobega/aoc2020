@@ -1,8 +1,6 @@
 use 'hash' stand-alone
 use 'list' stand-alone
 
-data key <>, value <>
-
 composer parseLabel
   {ingredients: [<ingredient>+], allergens: [<allergenList>?]}
   rule ingredient: <'\w+'> (<WS>?)
@@ -17,19 +15,19 @@ end 'labels'
 
 def foodLabels: [$IN::lines -> parseLabel];
 
-def allergens: [] -> hash/Map;
+def allergens: [] -> hash/Map&{key: :(allergen:), value: :(ingredients:)};
 
 sink collateAllergens
   def food: $;
-  $.allergens... -> {key: $, value: $food.ingredients} -> allergens::put // emits previous, if any
-    -> {key: $.key, value: [$.value... -> \(<?($food.ingredients <[<=$>]>)> $!\)]}
+  $.allergens... -> {allergen: $, ingredients: $food.ingredients} -> allergens::put // emits previous, if any
+    -> {allergen: $.allergen, ingredients: [$.ingredients... -> \(<?($food.ingredients <[<=$>]>)> $!\)]}
     -> allergens::put -> !VOID
 end collateAllergens
 
 $foodLabels... -> !collateAllergens
 
 def safeIngredients: [$foodLabels... -> $.ingredients...] -> hash/Set;
-$allergens::entries -> $.value... -> safeIngredients::remove -> !VOID
+$allergens::entries -> $.ingredients... -> safeIngredients::remove -> !VOID
 
 // part 1
 $foodLabels -> \(
@@ -39,17 +37,17 @@ $foodLabels -> \(
 \) -> '$;
 ' -> !OUT::write
 
-def identifiedAllergens: [] -> hash/Map;
+def identifiedAllergens: [] -> hash/Map&{key: :(ingredient:), value: :(allergen:)};
 
 sink resolveAllergens
   @:[];
   $ -> #
   when <[](1..)> do
     $... -> \(
-      when <{value: <[](1)>}> do
-        {key: $.value(1), value: $.key} -> identifiedAllergens::put -> !VOID
-      when <{value: <[](2..)>}> do 
-        ..|@resolveAllergens: {key: $.key, value: [$.value... -> \(<?([$ -> identifiedAllergens::get] <=[]>)> $!\)]};
+      when <{ingredients: <[](1)>}> do
+        {ingredient: $.ingredients(1), allergen: $.allergen} -> identifiedAllergens::put -> !VOID
+      when <{ingredients: <[](2..)>}> do 
+        ..|@resolveAllergens: {allergen: $.allergen, ingredients: [$.ingredients... -> \(<?([$ -> identifiedAllergens::get] <=[]>)> $!\)]};
     \) -> !VOID
     def next: $@;
     @:[];
@@ -63,6 +61,6 @@ operator (a allergenAlphabetically b)
 end allergenAlphabetically
 
 // part 2
-[$identifiedAllergens::entries -> $.key] -> list/sort&{by: allergenAlphabetically}
+[$identifiedAllergens::entries -> $.ingredient] -> list/sort&{by: allergenAlphabetically}
   -> '$(1);$(2..last)... -> ',$;';
 ' -> !OUT::write
