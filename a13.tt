@@ -10,17 +10,17 @@ end toInt
 
 def data: [$IN::lines];
 
-def input: {earliest: $data(1) -> toInt, buses: $data(2) -> buses};
+def input: {earliest: ($data(1) -> toInt)"min", buses: $data(2) -> buses};
 
 //part1
 [$input.buses... -> {bus: $, timeSinceLeft: $input.earliest mod $}
   -> \(
-    when <{timeSinceLeft: <=0>}> do {bus: $.bus, timeToWait: 0}!
-    otherwise {bus: $.bus, timeToWait: $.bus - $.timeSinceLeft}!
+    when <{timeSinceLeft: <=0"min">}> do {bus: $.bus, timeToWait: 0}!
+    otherwise {bus: $.bus, timeToWait: ($.bus::raw)"min" - $.timeSinceLeft}!
   \)]
   -> \(@:$(1); $... -> # $@!
     when <{timeToWait: <..$@.timeToWait>}> do @: $;
-  \) -> $.bus * $.timeToWait -> '$;
+  \) -> $.bus::raw * $.timeToWait -> '$;
 ' -> !OUT::write
 
 composer departurePattern
@@ -29,18 +29,18 @@ composer departurePattern
 end departurePattern
 
 templates getOffsets
-  $ -> departurePattern -> \[i](<~='x'> {bus: $, offset: $i - 1}! \) !
+  $ -> departurePattern -> \[i](<~='x'> {bus: $, offset: ($i - 1)"1"}! \) !
 end getOffsets
 
 def desired: $data(2) -> getOffsets;
 
 templates ratchetUp
-  @: {candidate: 0, modulus: 1};
+  @: {candidate: 0"1", modulus: 1"1"};
   $... -> \(
     def next: $;
     $@ratchetUp.candidate -> #
-    when <?(($ + $next.offset) mod $next.bus <=0>)> do
-      @ratchetUp: {candidate: $, modulus: $@ratchetUp.modulus * $next.bus};
+    when <?(($ + $next.offset) mod $next.bus::raw <=0>)> do
+      @ratchetUp: {candidate: $, modulus: $@ratchetUp.modulus * $next.bus::raw};
     otherwise
       $ + $@ratchetUp.modulus -> #
   \) -> !VOID
@@ -52,7 +52,7 @@ $desired -> ratchetUp -> '$;
 ' -> !OUT::write
 
 test 'ratchet'
-  assert [{bus: 17, offset: 0}, {bus: 13, offset: 2}, {bus: 19, offset: 3}]
+  assert [{bus: 17, offset: 0"1"}, {bus: 13, offset: 2"1"}, {bus: 19, offset: 3"1"}]
     -> ratchetUp <=3417> 'calculates correctly'
 
   assert '17,x,13,19'

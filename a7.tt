@@ -1,3 +1,5 @@
+data count <"1">
+
 composer bagRule
   { colour: <colour>, (<=' bags contain '>) contains: [<content|none>+]} (<='.'>)
   rule colour: <'\w+ \w+'>

@@ -7,7 +7,7 @@ composer parseExpression
 end parseExpression
 
 templates evaluate
-  @: {result: 0, pendingOp: '+'};
+  @: {result: 0"1", pendingOp: '+'};
   $... -> #
   $@.result!
   when <[]> do $ -> evaluate -> #

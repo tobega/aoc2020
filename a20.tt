@@ -41,7 +41,7 @@ def corners:[$neighbours::entries -> \(<{neighbours: <[](4)>}> $.id!\)];
 // part 1.
 $corners -> \(
   @:1;
-  $... -> @: $@ * $;
+  $... -> @: $@ * $::raw;
   $@!
 \) -> '$;
 ' -> !OUT::write
@@ -114,7 +114,7 @@ test 'selectors'
 end 'selectors'
 
 templates detectSeamonsters
-  @: {image: $, monsters:0};
+  @: {image: $, monsters:0"1"};
   1..$@.image::length-2 -> \vertical(
     def startRow: $;
     $seamonsterWidth..$@detectSeamonsters.image(1)::length -> \horizontal(

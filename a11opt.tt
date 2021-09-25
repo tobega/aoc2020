@@ -1,5 +1,7 @@
 def input: [$IN::lines -> [$...]];
 
+data i <"1">, j <"1">, di <"1">, dj <"1">
+
 templates getAffectingPositions&{in:, lineOfSight:}
   def pos: $;
   [[{di: -1, dj: -1},
@@ -28,7 +30,7 @@ templates model&{lineOfSight:}
   @: $;
 
   templates addAffectingOccupied
-    @: {total: 0, fixed: 0};
+    @: {total: 0"1", fixed: 0"1"};
     $affecting($.i; $.j)... -> $@model($.i; $.j) -> #
     { $..., $@... }!
     <='+'> @.total: $@.total + 1;

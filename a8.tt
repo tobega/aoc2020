@@ -7,10 +7,10 @@ def program: [$IN::lines -> instruction];
 templates findLoop
   templates execute
     <{code: <='nop'>}> 1 !
-    <{code: <='acc'>}> @findLoop.acc: $@findLoop.acc + $.arg; 1 !
-    <{code: <='jmp'>}> $.arg !
+    <{code: <='acc'>}> @findLoop.acc: $@findLoop.acc + $.arg::raw; 1 !
+    <{code: <='jmp'>}> $.arg::raw !
   end execute
-  @: {acc: 0, program: [$... -> {$..., seen:0}]};
+  @: {acc: 0"1", program: [$... -> {$..., seen:0}]};
   1 -> #
   when <$@.program::length~..> $@.acc!
   when <?($@.program($) <{seen: <=1>}>)> do {debug: $@.acc}!

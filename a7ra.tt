@@ -1,3 +1,4 @@
+data bag <'.*'>, container <bag>, contained <bag>, amount <"1">
 // A look at what this might be in sql or relational syntax
 // bagrules is a relation/table on {container:, contained:, amount:}
 composer bagRule
@@ -104,7 +105,7 @@ templates contents3
 end contents3
 
 ($bagrules join {|{container: 'shiny gold', path: []}|}) -> ($ union ($ -> contents3))
--> $(by {|{container: 'shiny gold'}|} collect {totalInside:Sum&{of: :(amount:)}}) ... -> '$.totalInside;
+-> $(collect {totalInside:Sum&{of: :(amount:)}} by {|{container: 'shiny gold'}|}) ... -> '$.totalInside;
 ' -> !OUT::write
 
 // More tailspinny version??

@@ -13,12 +13,12 @@ templates memory&{at:}
   otherwise
     $@.numbers::length..$ -> ..|@.numbers: 0;
     def spoken: $;
-    @.turn: $@.turn + 1;
+    @.turn: $@.turn::raw + 1;
     def next: $@.numbers($spoken+1) -> \(
       when <=0> do 0 !
-      otherwise $@memory.turn - $ !
+      otherwise $@memory.turn::raw - $ !
     \);
-    @.numbers($spoken+1): $@.turn;
+    @.numbers($spoken+1): $@.turn::raw;
     $next -> #
 end memory
 

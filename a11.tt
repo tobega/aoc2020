@@ -35,14 +35,14 @@ $input -> modelSeating -> '$;
 templates countVisibleOccupied&{in:}
   @:0;
   def pos: $;
-  [{di: -1, dj: -1},
-    {di: -1, dj: 0},
-    {di: -1, dj: 1},
-    {di: 0, dj: 1},
-    {di: 1, dj: 1},
-    {di: 1, dj: 0},
-    {di: 1, dj: -1},
-    {di: 0, dj: -1}]... -> {$..., i: $pos.i + $.di, j: $pos.j + $.dj} -> #
+  [{di: -1"1", dj: -1"1"},
+    {di: -1"1", dj: 0"1"},
+    {di: -1"1", dj: 1"1"},
+    {di: 0"1", dj: 1"1"},
+    {di: 1"1", dj: 1"1"},
+    {di: 1"1", dj: 0"1"},
+    {di: 1"1", dj: -1"1"},
+    {di: 0"1", dj: -1"1"}]... -> {$..., i: $pos.i + $.di, j: $pos.j + $.dj} -> #
   $@!
   when <?($.i <..~1>)|?($.i <$in::length~..>)|?($.j <..~1>)|?($.j <$in($.i)::length~..>)> do
     !VOID
@@ -64,10 +64,10 @@ templates modelSeating2
     $ -> \[i;j](
       when <?($i <..~1>)|?($i <$seating::length~..>)|?($j <..~1>)|?($j <$seating($i)::length~..>)> do
         $ !
-      when <='L' ?({i: $i, j: $j} -> countVisibleOccupied&{in: $seating} <=0>)> do
+      when <='L' ?({i: ($i)"1", j: ($j)"1"} -> countVisibleOccupied&{in: $seating} <=0>)> do
         @modelSeating2.changed: 1;
         '#'!
-      when <='#' ?({i: $i, j: $j} -> countVisibleOccupied&{in: $seating} <5..>)> do
+      when <='#' ?({i: ($i)"1", j: ($j)"1"} -> countVisibleOccupied&{in: $seating} <5..>)> do
         @modelSeating2.changed: 1;
         'L'!
       otherwise

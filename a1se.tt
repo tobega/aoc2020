@@ -1,5 +1,5 @@
 composer toInt
-  <INT>
+  <INT> -> ($)"1"
 end toInt
 
 def numbers: [$IN::lines -> toInt];

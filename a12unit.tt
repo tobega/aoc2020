@@ -1,5 +1,11 @@
+data value <"deg"|"y"|"x"|"1">
 composer instruction
-  {action: <'.'>, value: <INT>}
+  {action: (def action: <'.'>;) $action, value: <INT> -> \(
+    when <?($action <='L'|='R'>)> do ($)"deg" !
+    when <?($action <='N'|='S'>)> do ($)"y" !
+    when <?($action <='E'|='W'>)> do ($)"x" !
+    otherwise ($)"1" !
+  \)}
 end instruction
 
 def navigation: [$IN::lines -> instruction];
@@ -22,13 +28,13 @@ templates move&{waypoint:}
   when <{action: <='F'>}> do
     @.x: $@.x + $@.dx * $.value;
     @.y: $@.y + $@.dy * $.value;
-  when <{action: <='R'>, value: <=90>}|{action: <='L'>, value: <=270>}>
+  when <{action: <='R'>, value: <=90"deg">}|{action: <='L'>, value: <=270"deg">}>
     @: {dx: (-$@.dy)"x", dy: ($@.dx)"y", x: $@.x, y: $@.y};
-  when <{action: <='R'|='L'>, value: <=180>}>
+  when <{action: <='R'|='L'>, value: <=180"deg">}>
     @: {dx: -$@.dx, dy: -$@.dy, x: $@.x, y: $@.y};
-  when <{action: <='R'>, value: <=270>}|{action: <='L'>, value: <=90>}>
+  when <{action: <='R'>, value: <=270"deg">}|{action: <='L'>, value: <=90"deg">}>
     @: {dx: ($@.dy)"x", dy: (-$@.dx)"y", x: $@.x, y: $@.y};
-  when <{action: <='R'|='L'>, value: <=360>}>
+  when <{action: <='R'|='L'>, value: <=360"deg">}>
     !VOID
 
   when <{action: <='N'>}?($waypoint <=1>)> do @.dy: $@.dy - $.value;

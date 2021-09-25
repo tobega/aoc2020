@@ -11,7 +11,7 @@
         "mainClass": "tailspin.Tailspin",
         "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
         "vmArgs": ["-Xmx4g"],
-        "args": "a14.tt < a14.txt"
+        "args": "a1se.tt < a1.txt"
     },
     {
         "type": "java",
@@ -19,7 +19,7 @@
         "request": "launch",
         "mainClass": "tailspin.Tailspin",
         "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
-        "args": "--test hash.tt"
+        "args": "--test a13.tt"
     }
   ]
 }

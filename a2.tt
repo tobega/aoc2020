@@ -14,7 +14,7 @@ operator (word count char)
 end count
 
 //part1
-$input -> \[i](when <?(($.word count $.required) <$.first..$.last>)> do $ !\) -> $::length -> !OUT::write
+$input -> \[i](when <?(($.word count $.required) <$.first::raw..$.last::raw>)> do $ !\) -> $::length -> !OUT::write
 '
 ' -> !OUT::write
 

@@ -47,7 +47,7 @@ templates recursiveCombat
     def winner: $cards -> \(
       when <?($(1) <..$@recursiveCombat(1)::length>)
         ?($(2) <..$@recursiveCombat(2)::length>)> do
-        [$@recursiveCombat(1; 1..$(1)), $@recursiveCombat(2; 1..$(2))] -> recursiveCombat -> $.winner !
+        [$@recursiveCombat(1; 1..$(1)), $@recursiveCombat(2; 1..$(2))] -> recursiveCombat -> $.winner::raw !
       otherwise
         (($cards(1) list/naturalOrder $cards(2))) mod 3 !
     \);

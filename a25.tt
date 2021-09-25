@@ -12,7 +12,7 @@ templates transform&{loop:}
 end transform
 
 source findEncryptionKey
-  {loop: 1, key: 7} -> #
+  {loop: 1"1", key: 7"1"} -> #
   when <{key: <=$publicKeys(1)>}> do
     def loop: $.loop;
     $publicKeys(2) -> transform&{loop: $loop} !

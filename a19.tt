@@ -26,10 +26,10 @@ templates collectRules
   $... -> #
   $@!
   when <{id: <$@::length..>}> do
-    $@::length..$.id -> ..|@: {};
+    $@::length..$.id::raw -> ..|@: {};
     $ -> #
   otherwise
-    @($.id+1): $;
+    @($.id::raw+1): $;
 end collectRules
 
 templates resolveRules

@@ -1,6 +1,6 @@
 composer ticketRule
   {rule: <'[^:]+'>, (<=': '>) low: <range>, (<=' or '>) high: <range>}
-  rule range: {from: <INT>, (<='-'>) to: <INT>}
+  rule range: {from: <INT> -> (id:$) -> $::value, (<='-'>) to: <INT> -> (id:$) -> $::value}
 end ticketRule
 
 composer ticketFields

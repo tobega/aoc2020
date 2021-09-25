@@ -1,5 +1,5 @@
 composer instruction
-  {action: <'.'>, value: <INT>}
+  {action: <'.'>, value: <INT> -> ($)"1"}
 end instruction
 
 def navigation: [$IN::lines -> instruction];
@@ -12,9 +12,9 @@ end abs
 templates move&{waypoint:}
   @: $waypoint -> \(
     when <=1> do
-      {dx: 10, dy: -1, x: 0, y: 0}!
+      {dx: 10"1", dy: -1"1", x: 0"1", y: 0"1"}!
     otherwise
-      {dx: 1, dy: 0, x: 0, y: 0}!
+      {dx: 1"1", dy: 0"1", x: 0"1", y: 0"1"}!
   \);
   $...-> #
   ($@.x -> abs) + ($@.y -> abs) !

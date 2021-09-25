@@ -1,5 +1,8 @@
 use 'hash' stand-alone
 
+data value <"1">,
+  address <"1">
+
 templates setMask
   @: [x00x] -> $(-3..1);
   $... -> #
