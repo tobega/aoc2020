@@ -9,9 +9,9 @@
         "name": "Tailspin",
         "request": "launch",
         "mainClass": "tailspin.Tailspin",
-        "classPaths": ["/Users/tobe/tobega/tailspin-v0/tailspin.jar"],
+        "classPaths": ["/Users/torbjorn.gannholm/tobega/tailspin-v0/tailspin.jar"],
         "vmArgs": ["-Xmx4g"],
-        "args": "a1se.tt < a1.txt"
+        "args": ["a25.tt", "<", "a25.txt"]
     },
     {
         "type": "java",

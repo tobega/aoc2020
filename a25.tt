@@ -1,5 +1,5 @@
 composer toInt
-  <INT>
+  <INT"1">
 end toInt
 
 def publicKeys: [$IN::lines -> toInt];
@@ -7,7 +7,7 @@ def publicKeys: [$IN::lines -> toInt];
 templates transform&{loop:}
   def subject: $;
   @:1;
-  1..$loop -> @: $@ * $subject mod 20201227;
+  1"1"..$loop -> @: $@ * $subject mod 20201227;
   $@!
 end transform
 
@@ -20,7 +20,7 @@ source findEncryptionKey
     def loop: $.loop;
     $publicKeys(1) -> transform&{loop: $loop} !
   otherwise
-    {loop: $.loop+1, key: $.key * 7 mod 20201227} -> #
+    {loop: $.loop+1"1", key: $.key * 7 mod 20201227} -> #
 end findEncryptionKey
 
 //part1
