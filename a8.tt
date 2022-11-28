@@ -1,5 +1,5 @@
 composer instruction
-  {code: <'\w+'>, (<=' '>) arg: <INT>}
+  {code: <'\w+'>, (<=' '>) arg: <INT"1">}
 end instruction
 
 def program: [$IN::lines -> instruction];
@@ -7,7 +7,7 @@ def program: [$IN::lines -> instruction];
 templates findLoop
   templates execute
     <{code: <='nop'>}> 1 !
-    <{code: <='acc'>}> @findLoop.acc: $@findLoop.acc + $.arg::raw; 1 !
+    <{code: <='acc'>}> @findLoop.acc: $@findLoop.acc + $.arg; 1 !
     <{code: <='jmp'>}> $.arg::raw !
   end execute
   @: {acc: 0"1", program: [$... -> {$..., seen:0}]};
@@ -27,16 +27,16 @@ $program -> findLoop -> '$.debug;
 source tryHacks
   templates nextTwiddle
     when <$program::length~..> 'Too big $;' -> !OUT::write
-    when <?($program($).code <='nop'|='jmp'>)> do $ !
+    when <?($program($).code::raw <='nop'|='jmp'>)> do $ !
     otherwise $ + 1 -> #
   end nextTwiddle
   @: 0;
-  {debug: 0} -> #
-  when <{debug: <>}> do
+  {debug: 0"1"} -> #
+  when <´´ {debug: <>}> do
     @: $@ + 1 -> nextTwiddle;
     $program -> \[i](
       when <?($i <=$@tryHacks>)> do
-        {arg: $.arg, code: $.code -> \(
+        {arg: $.arg, code: $.code::raw -> \(
           when <='nop'> do 'jmp' !
           when <='jmp'> do 'nop' ! \) } !
       otherwise $!

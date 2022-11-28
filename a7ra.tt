@@ -3,8 +3,8 @@ data bag <'.*'>, container <bag>, contained <bag>, amount <"1">
 // bagrules is a relation/table on {container:, contained:, amount:}
 composer bagRule
   (<colour> -> @:$;) (<=' bags contain '>) <content|none>+ (<='.'>)
-  rule colour: <'\w+ \w+'>
-  rule content: {container: $@, amount: <INT>, (<=' '>) contained: <colour>} (<' bags?(, )?'>)
+  rule colour: <bag´'\w+ \w+'>
+  rule content: {container: $@, amount: <INT"1">, (<=' '>) contained: <colour>} (<' bags?(, )?'>)
   rule none: (<='no other bags'>)
 end bagRule
 
@@ -34,7 +34,7 @@ templates containers
     -> ($ union ($ -> containers)) !
 end containers
 
-{|{contained: 'shiny gold'}|} -> containers -> $::count -> '$;
+{|{contained: bag´'shiny gold'}|} -> containers -> $::count -> '$;
 ' -> !OUT::write
 
 // part 2 sql, beware that duplicate rows may be removed
@@ -64,7 +64,7 @@ templates contents
       -> {|$...,  $ -> contents ...|} !
 end contents
 
-{|{container: 'x', contained: 'shiny gold', amount: 1}|} -> contents ... -> ..=Sum&{of: :(amount:)} -> '$;
+{|{container: bag´'x', contained: bag´'shiny gold', amount: 1"1"}|} -> contents ... -> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write
 
 // always get correct result with a unique id on each tuple we want to keep
@@ -88,7 +88,7 @@ templates contents2
       -> ($ union ($ -> contents2)) !
 end contents2
 
-{|{container: 'x', contained: 'shiny gold', amount: 1}|} -> contents2 ... -> ..=Sum&{of: :(amount:)} -> '$;
+{|{container: bag´'x', contained: bag´'shiny gold', amount: 1"1"}|} -> contents2 ... -> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write
 
 // Here we have a solution that uses relational algebra correctly, where each tuple states the fact that
@@ -104,8 +104,8 @@ templates contents3
       -> ($ union ($ -> contents3)) !
 end contents3
 
-($bagrules join {|{container: 'shiny gold', path: []}|}) -> ($ union ($ -> contents3))
--> $(collect {totalInside:Sum&{of: :(amount:)}} by {|{container: 'shiny gold'}|}) ... -> '$.totalInside;
+($bagrules join {|{container: bag´'shiny gold', path: []}|}) -> ($ union ($ -> contents3))
+-> $(collect {totalInside:Sum&{of: :(amount:)}} by {|{container: bag´'shiny gold'}|}) ... -> '$.totalInside;
 ' -> !OUT::write
 
 // More tailspinny version??
@@ -120,6 +120,6 @@ templates contents4
     $next -> #
 end contents4
 
-($bagrules join {|{container: 'shiny gold', path: []}|}) -> contents4 ...
+($bagrules join {|{container: bag´'shiny gold', path: []}|}) -> contents4 ...
 -> ..=Sum&{of: :(amount:)} -> '$;
 ' -> !OUT::write

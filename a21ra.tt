@@ -52,7 +52,7 @@ end 'example'
 
 templates identifyAllergens
   when <?($::count <1..>)> do
-    def unique: ($ matching ($(collect {n: Count} by $({allergen:})) join {|{n: 1}|}));
+    def unique: ($ matching ($(collect {n: Count} by $({allergen:})) join {|{n: 1"1"}|}));
     $unique... !
     ($ notMatching $unique({ingredient:})) -> #
 end identifyAllergens

@@ -20,6 +20,6 @@ $input -> \[i](when <?(($.word count $.required) <$.first::raw..$.last::raw>)> d
 
 //part2
 $input -> \[i](def pw: $; $ -> #
-  when <?([$pw.word...] -> $([$pw.first, $pw.last])
-      -> \[j](when <=$pw.required> do $!\) -> $::length <=1>)> do $ !
+  when <?([$pw.word...] -> $([$pw.first::raw, $pw.last::raw])
+      -> \[j](when <=$pw.required::raw> do $!\) -> $::length <=1>)> do $ !
 \) -> $::length -> !OUT::write

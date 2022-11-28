@@ -9,7 +9,7 @@ templates memory&{at:}
   \) -> !VOID
   $(last) -> #
 
-  when <?($@.turn <=$at-1>)> do $!
+  when <?($@.turn::raw <=$at-1>)> do $!
   otherwise
     $@.numbers::length..$ -> ..|@.numbers: 0;
     def spoken: $;

@@ -3,7 +3,7 @@ data count <"1">
 composer bagRule
   { colour: <colour>, (<=' bags contain '>) contains: [<content|none>+]} (<='.'>)
   rule colour: <'\w+ \w+'>
-  rule content: {count: <INT>, (<=' '>) colour: <colour>} (<' bags?(, )?'>)
+  rule content: {count: <INT"1">, (<=' '>) colour: <colour>} (<' bags?(, )?'>)
   rule none: (<='no other bags'>)
 end bagRule
 
@@ -29,8 +29,8 @@ end containerSearch
 ' -> !OUT::write
 
 templates countBags
-  @: 0;
-  {count: 1, colour: $} -> #
+  @: 0"1";
+  {count: 1"1", colour: $} -> #
   $@ !
   <> def current: $;
     @: $@ + $.count;
@@ -39,7 +39,7 @@ templates countBags
 end countBags
 
 //part2
-'shiny gold' -> countBags -> $-1 ->'$;
+'shiny gold' -> countBags -> $-1"1" ->'$;
 ' -> !OUT::write
 
 test 'part2'

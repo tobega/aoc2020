@@ -3,9 +3,9 @@ use 'list' stand-alone
 
 composer parseLabel
   {ingredients: [<ingredient>+], allergens: [<allergenList>?]}
-  rule ingredient: <'\w+'> (<WS>?)
+  rule ingredient: <ingredient´'\w+'> (<WS>?)
   rule allergenList: (<='(contains '>) <allergen>+ (<=')'>)
-  rule allergen: <'\w+'> (<',? ?'>)
+  rule allergen: <allergen´'\w+'> (<',? ?'>)
 end parseLabel
 
 test 'labels'

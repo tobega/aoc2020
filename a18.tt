@@ -1,7 +1,7 @@
 composer parseExpression
   <expression>
   rule expression: [<term> <operation>*]
-  rule term: <INT|parens> (<WS>?)
+  rule term: <INT"1"|parens> (<WS>?)
   rule parens: (<='('> <WS>?) <expression> (<WS>? <=')'>)
   rule operation: <'.'> (<WS>?) <term> (<WS>?)
 end parseExpression
@@ -11,8 +11,8 @@ templates evaluate
   $... -> #
   $@.result!
   when <[]> do $ -> evaluate -> #
-  when <='+'|='*'> do @.pendingOp: $;
-  when <?($@.pendingOp <='+'>)> do @.result: $@.result + $;
+  when <´´ ='+'|='*'> do @.pendingOp: $;
+  when <?($@.pendingOp::raw <='+'>)> do @.result: $@.result + $;
   otherwise @.result: $@.result * $;
 end evaluate
 
@@ -20,7 +20,7 @@ def input: [$IN::lines -> parseExpression];
 
 // part1
 $input -> \(
-  @: 0;
+  @: 0"1";
   $... -> evaluate -> @: $@ + $;
   $@!
 \) -> '$;
@@ -30,7 +30,7 @@ templates reduceAdditions
   @: $;
   1 -> #
   when <$@::length~..> do $@ !
-  when <?($@($) <='+'>)> do 
+  when <?($@($) <´´ ='+'>)> do 
     def a: ^@reduceAdditions($-1) -> advancedEvaluate;
     def b: ^@reduceAdditions($) -> advancedEvaluate;
     @reduceAdditions($-1): $a + $b;
@@ -42,7 +42,7 @@ templates reduceMultiplications
   @: $;
   1 -> #
   when <$@::length~..> do $@ !
-  when <?($@($) <='*'>)> do 
+  when <?($@($) <´´ ='*'>)> do 
     def a: ^@reduceMultiplications($-1) -> advancedEvaluate;
     def b: ^@reduceMultiplications($) -> advancedEvaluate;
     @reduceMultiplications($-1): $a * $b;
@@ -57,7 +57,7 @@ end advancedEvaluate
 
 // part2
 $input -> \(
-  @: 0;
+  @: 0"1";
   $... -> advancedEvaluate -> @: $@ + $;
   $@!
 \) -> '$;

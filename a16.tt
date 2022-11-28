@@ -1,11 +1,11 @@
 composer ticketRule
   {rule: <'[^:]+'>, (<=': '>) low: <range>, (<=' or '>) high: <range>}
-  rule range: {from: <INT> -> (id:$) -> $::value, (<='-'>) to: <INT> -> (id:$) -> $::value}
+  rule range: {from: <id´INT>, (<='-'>) to: <id´INT>}
 end ticketRule
 
 composer ticketFields
   [<field>+]
-  rule field: <INT> (<=','>?)
+  rule field: <id´INT> (<=','>?)
 end ticketFields
 
 templates parseInput
@@ -16,9 +16,9 @@ templates parseInput
   when <='your ticket:'> @.stage: 'mine';
   when <='nearby tickets:'> @.stage: 'nearby';
   when <=''> do !VOID
-  when <?($@.stage <='rules'>)> ..|@.data.rules: $ -> ticketRule;
-  when <?($@.stage <='mine'>)> @.data.myTicket: $ -> ticketFields;
-  when <?($@.stage <='nearby'>)> ..|@.data.nearby: $ -> ticketFields;
+  when <?($@.stage <=stage´'rules'>)> ..|@.data.rules: $ -> ticketRule;
+  when <?($@.stage <=stage´'mine'>)> @.data.myTicket: $ -> ticketFields;
+  when <?($@.stage <=stage´'nearby'>)> ..|@.data.nearby: $ -> ticketFields;
 end parseInput
 
 def input: [$IN::lines] -> parseInput;
@@ -34,7 +34,7 @@ end isInvalidField
 
 source scanningErrorRate
   @: 0;
-  $input.nearby... ... -> isInvalidField -> @: $@ + $;
+  $input.nearby... ... -> isInvalidField -> @: $@ + $::raw;
   $@!
 end scanningErrorRate
 
@@ -69,7 +69,7 @@ templates removeDuplicates
   when <~[<[]>]> do $!
   otherwise
     $ -> \[i](
-      when <[](1)> do
+      when <´´ [](1)> do
         def rule: $(1);
         @removeDuplicates($i): $rule;
         @removeDuplicates: $@removeDuplicates -> \[j](
@@ -85,7 +85,7 @@ def rules: $determineRules;
 source controlValue
   @: 1;
   $rules -> \[i](
-    <{rule: <'departure.*'>}> @controlValue: $@controlValue * $input.myTicket($i);
+    <{rule: <'departure.*'>}> @controlValue: $@controlValue * $input.myTicket($i)::raw;
   \) -> !VOID
   $@!
 end controlValue

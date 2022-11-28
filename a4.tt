@@ -28,7 +28,7 @@ def input: '$IN::lines -> '$;$#10;';' -> passports;
 
 // part1
 $input -> \[i](
-    when <{byr: <>, iyr: <>, eyr:<>, hgt:<>, hcl:<>, ecl:<>, pid:<>}> $ !
+    when <´{}´ {byr: <>, iyr: <>, eyr:<>, hgt:<>, hcl:<>, ecl:<>, pid:<>}> $ !
   \) -> '$::length;
 ' -> !OUT::write
 
@@ -43,11 +43,11 @@ composer length
 end length
 
 $input -> \[i](
-    when <{
+    when <´{}´ {
       byr: <'\d{4}'?($ -> toInt <1920..2002>)>,
       iyr: <'\d{4}'?($ -> toInt <2010..2020>)>,
       eyr:<'\d{4}'?($ -> toInt <2020..2030>)>,
-      hgt:<?($ -> length <{unit: <='cm'>, value: <150..193>}|{unit: <='in'>, value: <59..76>}>)>,
+      hgt:<?($ -> length <´{}´ {unit: <='cm'>, value: <150..193>}|{unit: <='in'>, value: <59..76>}>)>,
       hcl:<'#[0-9a-f]{6}'>,
       ecl:<='amb'|='blu'|='brn'|='gry'|='grn'|='hzl'|='oth'>,
       pid:<'\d{9}'>}> $ !

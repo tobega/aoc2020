@@ -124,11 +124,11 @@ templates detectSeamonsters
         $@detectSeamonsters.image($+$startRow; $selectors($+1))...!
       \getSeamonsterPixels)] -> #
       when <~[<='.'>]> do
-        @detectSeamonsters.monsters: $@detectSeamonsters.monsters+1;
+        @detectSeamonsters.monsters: $@detectSeamonsters.monsters+1"1";
         0..~$selectors::length -> @detectSeamonsters.image($+$startRow; $selectors($+1)): $selectors($+1)... -> 'O';
     \horizontal) -> !VOID
   \vertical) -> !VOID
-  $@.monsters -> \(<1..> $!\) -> $@.image !
+  $@.monsters -> \(<1"1"..> $!\) -> $@.image !
 end detectSeamonsters
 
 //part 2

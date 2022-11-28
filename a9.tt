@@ -1,38 +1,38 @@
 composer toInt
-  <INT>
+  <INT"1">
 end toInt
 
-def input: [$IN::lines -> toInt];
+def input: 1"1":[$IN::lines -> toInt];
 
 data i <"1">, j<"1">
 
 processor Preamble
   data ins <"1"> local
-  @: {preceding: $, ins: 1};
+  @: {preceding: $, ins: 1"1"};
   templates appendOrReject // outputs number if rejected
     def next: $;
-    {i: 1, j: 2} -> #
+    {i: 1"1", j: 2"1"} -> #
 
-    when <{i: <25..>}> do $next! // reject
+    when <{i: <25"1"..>}> do $next! // reject
 
-    when <{j: <26..>}> do {i: $.i + 1, j: $.i + 2} -> #
+    when <{j: <26"1"..>}> do {i: $.i + 1"1", j: $.i + 2"1"} -> #
 
     when <?($@Preamble.preceding($.i) + $@Preamble.preceding($.j) <=$next>)> do //append
       @Preamble.preceding($@Preamble.ins): $next;
-      @Preamble.ins: $@Preamble.ins mod 25 + 1;
+      @Preamble.ins: $@Preamble.ins mod 25 + 1"1";
 
-    otherwise {i: $.i, j: $.j + 1} -> #
+    otherwise {i: $.i, j: $.j + 1"1"} -> #
   end appendOrReject
 end Preamble
 
 source firstNonFollowing
-  def preamble: $input(1..25) -> Preamble;
-  @: 0;
-  26 -> #
-  when <?($@ <1..>)> do $@!
+  def preamble: $input(1"1"..25"1") -> Preamble;
+  @: 0"1";
+  26"1" -> #
+  when <?($@ <1"1"..>)> do $@!
   otherwise
     $input($) -> preamble::appendOrReject -> @: $;
-    $+1 -> #
+    $+1"1" -> #
 end firstNonFollowing
 
 //part1
@@ -43,11 +43,11 @@ def part1: $firstNonFollowing;
 templates findContinuousSum
   data sum <"1">, min <"1">, max <"1"> local
   def target: $;
-  {i: 1, j: 2, sum: $input(1) + $input(2)} -> #
+  {i: 1"1", j: 2"1", sum: $input(1"1") + $input(2"1")} -> #
 
   when <{sum: <=$target>}> do
     $input($.i..$.j) -> \(
-      @: {min: $(1), max: $(1)};
+      @: {min: $(1"1"), max: $(1"1")};
       $... -> #
       $@.min + $@.max!
       when <..~$@.min> do @.min: $;
@@ -55,10 +55,10 @@ templates findContinuousSum
     \) !
   
   when <{sum: <..$target>}> do
-    {sum: $.sum + $input($.j+1), i: $.i, j: $.j+1} -> #
+    {sum: $.sum + $input($.j+1"1"), i: $.i, j: $.j+1"1"} -> #
   
   when <{sum: <$target..>}> do
-    {sum: $.sum - $input($.i), i: $.i + 1, j: $.j} -> #
+    {sum: $.sum - $input($.i), i: $.i + 1"1", j: $.j} -> #
 end findContinuousSum
 
 $part1 -> findContinuousSum -> '$;

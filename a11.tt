@@ -10,7 +10,7 @@ end countOccupied
 templates modelSeating
   @:{changed:1};
   $ -> #
-  when <?($@.changed <=0>)> do $ -> countOccupied !
+  when <?($@.changed <=changed´0>)> do $ -> countOccupied !
   otherwise
     @.changed: 0;
     def seating: $;
@@ -44,11 +44,11 @@ templates countVisibleOccupied&{in:}
     {di: 1"1", dj: -1"1"},
     {di: 0"1", dj: -1"1"}]... -> {$..., i: $pos.i + $.di, j: $pos.j + $.dj} -> #
   $@!
-  when <?($.i <..~1>)|?($.i <$in::length~..>)|?($.j <..~1>)|?($.j <$in($.i)::length~..>)> do
+  when <?($.i <..~1"1">)|?($.i <($in::length)"1"~..>)|?($.j <..~1"1">)|?($.j <($in($.i::raw)::length)"1"~..>)> do
     !VOID
-  when <?($in($.i; $.j) <='L'>)> do
+  when <?($in($.i::raw; $.j::raw) <='L'>)> do
     !VOID
-  when <?($in($.i; $.j) <='#'>)> do
+  when <?($in($.i::raw; $.j::raw) <='#'>)> do
     @: $@ + 1;
   otherwise
     {$..., i: $.i + $.di, j: $.j + $.dj} -> #
@@ -57,7 +57,7 @@ end countVisibleOccupied
 templates modelSeating2
   @:{changed:1};
   $ -> #
-  when <?($@.changed <=0>)> do $ -> countOccupied !
+  when <?($@.changed <=changed´0>)> do $ -> countOccupied !
   otherwise
     @.changed: 0;
     def seating: $;

@@ -22,7 +22,7 @@ end clearMask
 composer parseLine
   <mask|set>
   rule mask: (<='mask = '>) <'.{36}'> -> {set: $ -> setMask, clear: $ -> clearMask}
-  rule set: (<='mem['>) {address: <INT>, (<='] = '>) value: <INT>}
+  rule set: (<='mem['>) {address: <INT"1">, (<='] = '>) value: <INT"1">}
 end parseLine
 
 def dockingProgram: [$IN::lines -> parseLine];
@@ -42,15 +42,15 @@ templates run&{v2:}
   @:{memory:[] -> hash/Map&{key: :(address:), value: :(value:)}, mask:{set: [x00x], clear: [xffx]}};
   $... -> #
   $@.memory -> \(
-    @: 0;
+    @: 0"1";
     $::entries -> $.value -> @: $@ + $;
     $@!
   \)!
 
-  when <{set: <>}> do @.mask: $;
+  when <´{}´ {set: <>}> do @.mask: $;
   when <?($v2 <=0>)> do
     // $@ -> !debugPrint
-    {address: $.address, value: (($.value::asBytes and $@.mask.clear) or $@.mask.set) -> $::asInteger} -> @.memory::put -> !VOID
+    {address: $.address, value: ((($.value::asBytes and $@.mask.clear) or $@.mask.set) -> $::asInteger)"1"} -> @.memory::put -> !VOID
   otherwise
     def instruction: $;
     def floating: (($@.mask.set xor $@.mask.clear) and [x 0f ffff ffff x]);
@@ -62,7 +62,7 @@ templates run&{v2:}
         def bit: $;
         @: [$@... -> \(($ or $bit)! ($ and $bit::inverse)!\)];
     \floats) -> $::asInteger -> \(
-      {address: $, value: $instruction.value} -> @run.memory::put -> !VOID
+      {address: ($)"1", value: $instruction.value} -> @run.memory::put -> !VOID
     \) -> !VOID
 end run
 

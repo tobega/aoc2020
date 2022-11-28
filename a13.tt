@@ -24,12 +24,12 @@ def input: {earliest: ($data(1) -> toInt)"min", buses: $data(2) -> buses};
 ' -> !OUT::write
 
 composer departurePattern
-  [<p>+]
+  0:[<p>+]
   rule p: <INT|='x'> (<=','>?)
 end departurePattern
 
 templates getOffsets
-  $ -> departurePattern -> \[i](<~='x'> {bus: $, offset: ($i - 1)"1"}! \) !
+  $ -> departurePattern -> \[i](<~´´='x'> {bus: $, offset: ($i)"1"}! \) !
 end getOffsets
 
 def desired: $data(2) -> getOffsets;
@@ -39,7 +39,7 @@ templates ratchetUp
   $... -> \(
     def next: $;
     $@ratchetUp.candidate -> #
-    when <?(($ + $next.offset) mod $next.bus::raw <=0>)> do
+    when <?(($ + $next.offset) mod $next.bus::raw <=0"1">)> do
       @ratchetUp: {candidate: $, modulus: $@ratchetUp.modulus * $next.bus::raw};
     otherwise
       $ + $@ratchetUp.modulus -> #
@@ -53,9 +53,9 @@ $desired -> ratchetUp -> '$;
 
 test 'ratchet'
   assert [{bus: 17, offset: 0"1"}, {bus: 13, offset: 2"1"}, {bus: 19, offset: 3"1"}]
-    -> ratchetUp <=3417> 'calculates correctly'
+    -> ratchetUp <=3417"1"> 'calculates correctly'
 
   assert '17,x,13,19'
-    -> getOffsets <=[{bus: 17, offset: 0}, {bus: 13, offset: 2}, {bus: 19, offset: 3}]>
+    -> getOffsets <=0:[{bus: 17, offset: 0"1"}, {bus: 13, offset: 2"1"}, {bus: 19, offset: 3"1"}]>
     'makes pattern'
 end 'ratchet'
